@@ -1,7 +1,7 @@
 # Table of contents
-- [What is Bamboo Firewall?](#What is Bamboo Firewall?)
+- [What is Bamboo Firewall?](#What-is-Bamboo-Firewall?)
 - [Community](#Community)
-- [Case studies](#Case studies)
+- [Case studies](#Case-studies)
 - [Architecture](#Architecture)
 - [License](#License)
 
