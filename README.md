@@ -6,7 +6,7 @@
 - [License](#License)
 
 # What is Bamboo Firewall?
-Bamboo Firewall is an opensource software firewall that supports network segmentation, Central management and Rulers/Polices as code.
+Bamboo Firewall is an opensource software firewall that supports network segmentation, Central management and Rulers/Polices as code. It is a host base firewall, so the policy is very strict. Unlike traditional firewalls, it provides many functions for centralized policy setting as tag, label, range, annotations...
 
 # Community
 You can join the following groups or channels to discuss or ask questions about Bamboo Firewall, and to keep yourself informed of the latest Bamboo Firewall updates:
@@ -15,7 +15,15 @@ You can join the following groups or channels to discuss or ask questions about 
 
 # Case studies
 - [Bamboo Firewall at GHTK](./case-studies/ghtk.md)
+
 # Architecture
+![Bamboo Firewall architecture](./imgs/architecture/bamboo_firewall_architecture.png)
+
+- etcd cluster: where store metadata of bamboo firewall. ex: server endpoint, network zone, policies
+- be: API backend server. It provides API for frontend
+- fe: Frontend provides user interfaces via webview
+- cli: command line provides console interface for administrator  
+- agent: Agent installed each server and connect to etcd cluster to apply polices
 
 # About us
 - [bienkma](https://bienkma.github.io) - Founder
