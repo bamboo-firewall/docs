@@ -9,7 +9,7 @@
 # What is Bamboo Firewall?
 
 Bamboo Firewall is an opensource software firewall that supports network segmentation, Central management and
-Rulers/Polices as code. It is a host base firewall, so the policy is very strict. Unlike traditional firewalls, it
+rules/polices as code. It is a host base firewall, so the policy is very strict. Unlike traditional firewalls, it
 provides many functions for centralized policy setting as tag, label, range, annotations...
 
 # Community
@@ -44,7 +44,7 @@ informed of the latest Bamboo Firewall updates:
 - step 4: Install agent to server which you want to apply polices and rules of firewall
 - step 5: write rules as code then apply to bamboo firewall
 
-For example: We have 7 servers:
+For example: We have 7 servers below
 
 | No  | HOSTNAME   | IPADDR         | INTERFACES | ROLE       | ZONE | PROJECT | NAMESPCE |
 |-----|------------|----------------|------------|------------|----------|---------|----------|
@@ -52,6 +52,7 @@ For example: We have 7 servers:
 | 2   | app[01-02] | 10.110.2.[1-2] | eth01      | app        | green|  example  |  production |
 | 3   | lb[01-02]  | 10.110.3.[1-2] | eth01      | lb         | black|   example |  production |
 | 4   | admin01    | 10.110.8.1     | eth01      | management | gray|   example  |  production |
+
 
 | No  | IP SRC              | PORT SRC | IP DST              | PORT DST | PROTO   | Details         |
 |-----|---------------------|----------|---------------------|----------|---------|-----------------|
@@ -61,7 +62,7 @@ For example: We have 7 servers:
 | 4   | all-example-servers | any      | any                 | 123,53   | UDP/TCP | DNS and NTP     |
 | 5   | 10.110.8.1          | any      | all-example-servers | any      | UDP/TCP | Management      |
 
-- make a folder to store code:
+- [make a folder to store code](./demo/bbfw):
 
 ```shell
 mkdir bbfw bbfw/hep bbfw/gns bbfw/gnp
