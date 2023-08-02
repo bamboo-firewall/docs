@@ -1,0 +1,10 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkSet
+metadata:
+  name: green
+  labels:
+    zone: green
+    name: green
+spec:
+  nets:
+    - 10.110.2.0/24

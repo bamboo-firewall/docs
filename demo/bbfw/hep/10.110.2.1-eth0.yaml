@@ -1,0 +1,14 @@
+apiVersion: projectcalico.org/v3
+kind: HostEndpoint
+metadata:
+  name: 10.110.2.1
+  labels:
+    role: app
+    zone: white
+    namespace: production
+    project: example
+    ip: 10.110.2.1
+spec:
+  node: app01
+  interfaceName: eth0
+  expectedIPs: ["10.110.2.1"]

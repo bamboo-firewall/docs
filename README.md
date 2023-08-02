@@ -188,6 +188,7 @@ spec:
   node: admin01
   interfaceName: eth0
   expectedIPs: ["10.110.8.1"]
+EOF
 ```
 
 - create zones
@@ -276,7 +277,7 @@ spec:
         ports: [3306]
 EOF
 
-cat <<EOF >>db-example.yaml
+cat <<EOF >>lb-example.yaml
 apiVersion: projectcalico.org/v3
 kind: GlobalNetworkPolicy
 metadata:
@@ -296,7 +297,7 @@ spec:
         ports: [80,443]
 EOF
 
-cat <<EOF >>db-example.yaml
+cat <<EOF >>app-example.yaml
 apiVersion: projectcalico.org/v3
 kind: GlobalNetworkPolicy
 metadata:
