@@ -17,7 +17,7 @@ You can join the following groups or channels to discuss or ask questions about 
 - [Bamboo Firewall at GHTK](./case-studies/ghtk.md)
 
 # Architecture
-![Bamboo Firewall architecture](./imgs/architecture/bamboo_firewall_architecture.png)
+![Bamboo Firewall architecture](./imgs/architecture/architecture.png)
 
 - etcd cluster: where store metadata of bamboo firewall. ex: server endpoint, network zone, policies
 - be: API backend server. It provides API for frontend
