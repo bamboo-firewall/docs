@@ -1,0 +1,65 @@
+---
+- name: "Install ipset"
+  shell: 'sudo apt install ipset -y'
+
+- name: download bamboofw-agent
+  ansible.builtin.get_url:
+    url: https://github.com/bamboo-firewall/calico/releases/download/v0.0.1/calico-felix-amd64.tar.gz
+    dest: /tmp/calico-felix-amd64.tar.gz
+    mode: '0644'
+
+- name: extract binary file
+  shell: tar -xvf /tmp/calico-felix-amd64.tar.gz -C /usr/local/bin && chmod 0755 /usr/local/bin/calico-felix-amd64 && rm -rf /tmp/calico-felix-amd64.tar.gz
+
+- name: "Create directory for calico configuration"
+  file:
+    path: /etc/calico
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: "Create configuration file for calico"
+  template:
+    src: templates/felix.cfg.j2
+    dest: /etc/calico/felix.cfg
+    owner: root
+    group: root
+    mode: 0600
+
+- name: "Create directory for calico SSL configuration"
+  file:
+    path: /etc/calico/ssl
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  
+- name: "Coppy SSL for calico"
+  template:
+    src: '{{ item.src }}'
+    dest: "{{ item.dir }}/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0600
+  with_items:
+    - {dir: /etc/calico/ssl, src: ../etcd/files/ssl/etcd-key.pem, dest: etcd-key.pem}
+    - {dir: /etc/calico/ssl, src: ../etcd/files/ssl/ca.pem, dest: ca.pem}
+    - {dir: /etc/calico/ssl, src: ../etcd/files/ssl/etcd.pem, dest: etcd.pem}
+
+- name: "Create a calico service"
+  template:
+    src: templates/calico.service.j2
+    dest: /lib/systemd/system/calico-felix.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "Reload calico service"
+  command: systemctl daemon-reload
+
+- name: "Enable the calico service"
+  command: systemctl enable calico-felix
+
+- name: "Start the calico service"
+  command: systemctl restart calico-felix

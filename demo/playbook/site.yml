@@ -1,0 +1,12 @@
+---
+- hosts: etcd
+  become: yes
+  strategy: linear
+  roles:
+  - {role: etcd, tags: etcd}
+
+- hosts: bamboofw-agent
+  become: yes
+  strategy: linear
+  roles:
+  - {role: bamboofw-agent, tags: bamboofw-agent}

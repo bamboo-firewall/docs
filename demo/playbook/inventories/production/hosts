@@ -1,0 +1,9 @@
+[etcd]
+192.168.1.11   hostname="etcd1"
+192.168.1.12   hostname="etcd2"
+192.168.1.13   hostname="etcd3"
+
+[bamboofw-agent]
+192.168.2.10
+192.168.2.11
+192.168.2.12

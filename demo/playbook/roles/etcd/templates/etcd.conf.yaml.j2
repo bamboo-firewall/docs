@@ -1,0 +1,17 @@
+data-dir: {{ etcd_data_dir }}
+name: {{ hostvars[inventory_hostname]['hostname'] }}
+initial-advertise-peer-urls: https://{{ inventory_hostname }}:2380
+listen-peer-urls: https://{{ inventory_hostname }}:2380
+advertise-client-urls: https://{{ inventory_hostname }}:2379
+listen-client-urls: https://{{ inventory_hostname }}:2379
+initial-cluster-state: new
+initial-cluster: {% for host in groups['etcd'] %}{{ hostvars[host]['ansible_facts']['hostname'] }}=https://{{ hostvars[host]['inventory_hostname'] }}:2380{% if not loop.last %},{% endif %}{% endfor %}
+
+client-transport-security:
+  cert-file: /etc/etcd/ssl/etcd.pem
+  key-file: /etc/etcd/ssl/etcd-key.pem
+  trusted-ca-file: /etc/etcd/ssl/ca.pem
+peer-transport-security:
+  cert-file: /etc/etcd/ssl/etcd.pem
+  key-file: /etc/etcd/ssl/etcd-key.pem
+  trusted-ca-file: /etc/etcd/ssl/ca.pem

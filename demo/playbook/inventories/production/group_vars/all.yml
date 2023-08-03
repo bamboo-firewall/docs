@@ -1,0 +1,11 @@
+etcd_log_outputs: stderr
+etcd_log_level: Info
+etcd_data_dir: /var/lib/etcd
+
+felix_log_file: /var/log/felix.log
+felix_log_level: Info
+felix_prometheus_port: 9091
+felix_reporting_interval: 30
+
+ETCD_USERNAME: bamboofw
+ETCD_PASSWORD: bamboofw_change_me_now

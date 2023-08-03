@@ -1,0 +1,15 @@
+[Unit]
+Description=Calico Felix agent
+After=syslog.target network.target
+
+[Service]
+User=root
+EnvironmentFile=/etc/calico/felix.cfg
+ExecStartPre=/bin/mkdir -p /var/run/calico
+ExecStart=/usr/local/bin/calico-felix-amd64
+KillMode=process
+Restart=on-failure
+LimitNOFILE=32000
+
+[Install]
+WantedBy=multi-user.target
