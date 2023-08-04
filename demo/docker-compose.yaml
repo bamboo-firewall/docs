@@ -55,8 +55,8 @@ services:
       - BAMBOOFW_ETCD_USERNAME=bamboofw
       - BAMBOOFW_ETCD_PASSWORD=bamboofw_change_me_now
       - BAMBOOFW_ETCD_WATCHER_PATH=/calico/resources/v3/projectcalico.org
-      - BAMBOOFW_MONGODB_NAME="bamboofw"
-      - BAMBOOFW_MONGODB_URI=mongodb://root:change_me@mongodb:27017/?authSource=bamboofw
+      - BAMBOOFW_MONGODB_NAME=bamboofw
+      - BAMBOOFW_MONGODB_URI=mongodb://root:change_me@mongodb:27017/?authSource=admin
 
   be:
     image: bamboofirewall/be:v0.0.1
@@ -74,13 +74,15 @@ services:
       - REFRESH_TOKEN_EXPIRY_HOUR=168
       - REFRESH_TOKEN_SECRET=change_me
       - SERVER_ADDRESS=:9091
+    ports:
+      - 9091:9091
   fe:
     image: bamboofirewall/fe:v0.0.1
     restart: always
     container_name: "fe"
     environment:
-      - NEXT_PUBLIC_APP_URL="http://0.0.0.0:3000/"
-      - NEXT_PUBLIC_BAMBOO_API_URL"= "http://be:9091"
+      - NEXT_PUBLIC_APP_URL=http://0.0.0.0:3000/
+      - NEXT_PUBLIC_BAMBOO_API_URL=http://localhost:9091
     ports:
       - 3000:3000
   cli:
@@ -97,6 +99,8 @@ services:
       - ETCD_BAMBOOFW_USER=bamboofw
     volumes:
       - ./playbook/roles/etcd/files/ssl:/etc/etcd/ssl
+      - ./conf/calicoctl.cfg:/etc/calico/calicoctl.cfg
+      - ./bbfw/:/bamboofw/demo
     command: tail -f /dev/null
 
 volumes:
