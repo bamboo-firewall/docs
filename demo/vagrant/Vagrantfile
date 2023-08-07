@@ -1,0 +1,77 @@
+Vagrant.configure("2") do |config|
+
+  config.vm.define "manage_aio" do |manage_aio|
+    manage_aio.vm.box = "bento/ubuntu-20.04"
+    manage_aio.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    manage_aio.vm.network "private_network", ip: "192.168.56.5"
+    manage_aio.vm.provision :shell, inline: "sudo bash /vagrant/useradd.sh"
+    manage_aio.vm.provider "virtualbox" do |vb| 
+      vb.memory = "2048"
+      vb.cpus = 1
+    end
+  end
+
+  config.vm.define "lb01" do |lb01|
+    lb01.vm.box = "bento/ubuntu-20.04"
+    lb01.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    lb01.vm.network "private_network", ip: "192.168.56.11"
+    lb01.vm.provision :shell, inline: "sudo bash /vagrant/useradd.sh"
+    lb01.vm.provider "virtualbox" do |vb| 
+      vb.memory = "1024"
+      vb.cpus = 1
+    end
+  end
+  config.vm.define "lb02" do |lb02|
+    lb02.vm.box = "bento/ubuntu-20.04"
+    lb02.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    lb02.vm.network "private_network", ip: "192.168.56.12"
+    lb02.vm.provision :shell, inline: "sudo bash /vagrant/useradd.sh"
+    lb02.vm.provider "virtualbox" do |vb| 
+      vb.memory = "1024"
+      vb.cpus = 1
+    end
+  end
+
+  config.vm.define "app01" do |app01|
+    app01.vm.box = "bento/ubuntu-20.04"
+    app01.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    app01.vm.network "private_network", ip: "192.168.56.21"
+    app01.vm.provision :shell, inline: "sudo bash /vagrant/useradd.sh"
+    app01.vm.provider "virtualbox" do |vb| 
+      vb.memory = "1024"
+      vb.cpus = 1
+    end
+  end
+  config.vm.define "app02" do |app02|
+    app02.vm.box = "bento/ubuntu-20.04"
+    app02.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    app02.vm.network "private_network", ip: "192.168.56.22"
+    app02.vm.provision :shell, inline: "sudo bash /vagrant/useradd.sh"
+    app02.vm.provider "virtualbox" do |vb| 
+      vb.memory = "1024"
+      vb.cpus = 1
+    end
+  end
+
+  config.vm.define "db01" do |db01|
+    db01.vm.box = "bento/ubuntu-20.04"
+    db01.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    db01.vm.network "private_network", ip: "192.168.56.31"
+    db01.vm.provision :shell, inline: "sudo bash /vagrant/useradd.sh"
+    db01.vm.provider "virtualbox" do |vb| 
+      vb.memory = "1024"
+      vb.cpus = 1
+    end
+  end
+  config.vm.define "db02" do |db02|
+    db02.vm.box = "bento/ubuntu-20.04"
+    db02.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    db02.vm.network "private_network", ip: "192.168.56.32"
+    db02.vm.provision :shell, inline: "sudo bash /vagrant/useradd.sh"
+    db02.vm.provider "virtualbox" do |vb| 
+      vb.memory = "1024"
+      vb.cpus = 1
+    end
+  end
+
+end
