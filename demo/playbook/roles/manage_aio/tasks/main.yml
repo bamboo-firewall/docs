@@ -1,0 +1,87 @@
+---
+- name: Create directory
+  file:
+    path: /opt/{{ role_name }}/{{ item }}
+    state: directory
+  loop:
+  - conf
+  - ssl
+  - bbfw
+
+- name: Copy config file 
+  copy:
+    src: 'conf/{{ item }}'
+    dest: '/opt/{{ role_name }}/conf/'
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - etcd1.conf
+    - etcd2.conf
+    - etcd3.conf
+
+- name: Copy rule file 
+  copy:
+    src: bbfw/bbfw.tar.gz
+    dest: /opt/{{ role_name }}/bbfw/
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Extract rule to folder 
+  unarchive:
+    src: /opt/{{ role_name }}/bbfw/bbfw.tar.gz
+    dest: /opt/{{ role_name }}/bbfw/
+    owner: root
+    group: root
+    mode: 0600
+    decrypt: True
+    remote_src: True
+
+- name: Update calicoctl admin file
+  template:
+    src: calicoctl.cfg.j2
+    dest: /opt/{{ role_name }}/conf/calicoctl.cfg
+
+- name: Copy ssl file 
+  copy:
+    content: "{{ item.file_var }}"
+    dest: "/opt/{{ role_name }}/ssl/{{ item.file_name }}"
+  with_items:
+    - { file_var: "{{ ca_cert }}", file_name: ca.pem }
+    - { file_var: "{{ cert }}", file_name: etcd.pem }
+    - { file_var: "{{ key }}", file_name: etcd-key.pem }  
+
+- name: Update docker-compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: /opt/{{ role_name }}/docker-compose.yml
+
+- name: Pull lastest images
+  shell: cd /opt/{{ role_name }}/ && /usr/bin/docker-compose pull 
+
+- name: Up and run container
+  shell: cd /opt/{{ role_name }}/ && /usr/bin/docker-compose down -v && docker-compose up -d
+
+- name: Check if login page is available and returning status 200
+  uri:
+    url: http://{{ ansible_ssh_host }}:3000/login
+  register: result
+  until: "result.status == 200"
+  retries: 10
+  delay: 5
+
+- name: Info login to bamboofirewall
+  vars:
+    msg: |
+      # ========================================= #
+      #             Login information             #
+      # ========================================= #
+      # URL: http://{{ ansible_ssh_host }}:3000
+      # Username: admin@example.com
+      # Password: {{ admin_passwd }}
+      # ========================================= #
+  debug:
+    msg: "{{ msg.split('\n') }}"
+  run_once: True  
+  until: "result.status == 200"

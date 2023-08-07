@@ -1,0 +1,68 @@
+---
+- name: Build hosts file
+  lineinfile:
+    path: /etc/hosts
+    line: '{{ ansible_ssh_host }} {{ name }}'
+    create: true
+  tags: update_hostname
+
+- name: Set hostname 
+  hostname:
+    name: "{{ name }}"
+
+- name: Update cache
+  apt:
+    update_cache: true
+    upgrade: true
+
+- name: Install the latest version of jq
+  apt:
+    name: jq
+    state: present
+
+- name: Check if docker is running
+  shell: ps aux | grep docker | grep -v grep
+  ignore_errors: true
+  changed_when: false
+  register: service_docker_status
+
+- name: Check if docker-compose installed
+  shell: command -v docker-compose >/dev/null 2>&1
+  register: is_docker_compose_install
+  ignore_errors: true
+
+- name: Add GPG key docker
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  when: service_docker_status.rc != 0
+
+- name: Add repository docker
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    state: present
+  when: service_docker_status.rc != 0
+
+- name: install docker
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+  ignore_errors: true
+  when: service_docker_status.rc != 0
+
+- name: Install Docker Compose
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/{{ docker_compose_ver }}/docker-compose-linux-x86_64"
+    dest: /usr/bin/docker-compose
+    mode: "0755"
+  when: is_docker_compose_install.rc != 0
+
+- name: Start Docker service
+  service:
+    name: docker
+    state: started
+    enabled: true
+  when: service_docker_status.rc != 0

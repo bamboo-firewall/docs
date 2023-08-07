@@ -1,0 +1,14 @@
+apiVersion: projectcalico.org/v3
+kind: HostEndpoint
+metadata:
+  name: 192.168.56.31
+  labels:
+    role: db
+    zone: white
+    namespace: production
+    project: example
+    ip: 192.168.56.31
+spec:
+  node: db01
+  interfaceName: eth1
+  expectedIPs: ["192.168.56.31"]

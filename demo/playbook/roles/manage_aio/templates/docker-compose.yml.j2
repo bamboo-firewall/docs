@@ -1,0 +1,178 @@
+version: "3.3"
+services:
+  etcd1:
+    image: quay.io/coreos/etcd:{{ etcd_ver }}
+    restart: always
+    container_name: "etcd1"
+    volumes:
+      - etcd1:/var/lib/etcd
+      - ./ssl:/etc/etcd/ssl
+      - ./conf/etcd1.conf:/etc/etcd/etcd.conf
+    command: /usr/local/bin/etcd --config-file /etc/etcd/etcd.conf
+    ports:
+      - 2379:2379
+      - 2380:2380
+
+  etcd2:
+    image: quay.io/coreos/etcd:{{ etcd_ver }}
+    restart: always
+    container_name: "etcd2"
+    volumes:
+      - etcd2:/var/lib/etcd
+      - ./ssl:/etc/etcd/ssl
+      - ./conf/etcd2.conf:/etc/etcd/etcd.conf
+    command: /usr/local/bin/etcd --config-file /etc/etcd/etcd.conf
+    ports:
+      - 2381:2381
+      - 2382:2382
+
+  etcd3:
+    image: quay.io/coreos/etcd:{{ etcd_ver }}
+    restart: always
+    container_name: "etcd3"
+    volumes:
+      - etcd3:/var/lib/etcd
+      - ./ssl:/etc/etcd/ssl
+      - ./conf/etcd3.conf:/etc/etcd/etcd.conf
+    command: /usr/local/bin/etcd --config-file /etc/etcd/etcd.conf
+    ports:
+      - 2383:2383
+      - 2384:2384
+
+  cli:
+    image: bamboofirewall/cli:{{ cli_ver }}
+    container_name: "cli"
+    depends_on:
+      - etcd1
+      - etcd2
+      - etcd3
+    environment:
+      - ETCDCTL_ENDPOINTS=https://etcd1:2379,https://etcd2:2381,https://etcd3:2383
+      - ETCDCTL_CACERT=/etc/etcd/ssl/ca.pem
+      - ETCDCTL_CERT=/etc/etcd/ssl/etcd.pem
+      - ETCDCTL_KEY=/etc/etcd/ssl/etcd-key.pem
+      - ETCDCTL_API=3
+      - ETCD_ROOT_PASSWORD={{ root_etcd_passwd }}
+      - ETCD_BAMBOOFW_USER={{ bamboofw_etcd_user }}
+      - ETCD_BAMBOOFW_PASSWORD={{ bamboofw_etcd_passwd }}
+    volumes:
+      - /etc/hosts:/etc/hosts
+      - ./ssl:/etc/etcd/ssl
+      - ./conf/calicoctl.cfg:/etc/calico/calicoctl.cfg
+      - ./bbfw/:/bamboofw/demo
+    command: tail -f /dev/null
+
+  clisetup:
+    image: bamboofirewall/cli:{{ cli_ver }}
+    container_name: "clisetup"
+    restart: "no"
+    depends_on:
+      - etcd1
+      - etcd2
+      - etcd3
+    environment:
+      - ETCDCTL_ENDPOINTS=https://etcd1:2379,https://etcd2:2381,https://etcd3:2383
+      - ETCDCTL_CACERT=/etc/etcd/ssl/ca.pem
+      - ETCDCTL_CERT=/etc/etcd/ssl/etcd.pem
+      - ETCDCTL_KEY=/etc/etcd/ssl/etcd-key.pem
+      - ETCDCTL_API=3
+      - ETCD_ROOT_PASSWORD={{ root_etcd_passwd }}
+      - ETCD_BAMBOOFW_USER={{ bamboofw_etcd_user }}
+      - ETCD_BAMBOOFW_PASSWORD={{ bamboofw_etcd_passwd }}
+    volumes:
+      - ./ssl:/etc/etcd/ssl
+      - ./conf/calicoctl.cfg:/etc/calico/calicoctl.cfg
+    entrypoint: [ "bash", "-c", "/bamboofw/etcd-init-auth.sh"]  
+
+  mongodb:
+    image: mongo:{{ mongo_ver }}
+    restart: always
+    depends_on:
+      - etcd1
+      - etcd2
+      - etcd3
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: {{ mongo_root_user }}
+      MONGO_INITDB_ROOT_PASSWORD: {{ mongo_root_passwd }}
+      MONGO_INITDB_DATABASE: {{ mongo_database }}
+    container_name: "mongodb"
+    volumes:
+      - mongodb:/data/db
+
+  watcher:
+    image: bamboofirewall/watcher:{{ watcher_ver }}
+    restart: always
+    depends_on:
+      - mongodb
+    container_name: "watcher"
+    environment:
+      - BAMBOOFW_APP_ENV=testing
+      - BAMBOOFW_ENABLE_DEBUG_MODE=true
+      - BAMBOOFW_ETCD_PEER_URLS=https://etcd1:2379 https://etcd2:2381 https://etcd3:2383
+      - BAMBOOFW_ETCD_CA_CERT={{ ca_cert | b64encode }}
+      - BAMBOOFW_ETCD_SERVER_CERT={{ cert | b64encode }}
+      - BAMBOOFW_ETCD_SERVER_KEY={{ key | b64encode }}
+      - BAMBOOFW_ETCD_USERNAME={{ bamboofw_etcd_user }}
+      - BAMBOOFW_ETCD_PASSWORD={{ bamboofw_etcd_passwd }}
+      - BAMBOOFW_ETCD_WATCHER_PATH=/calico/resources/v3/projectcalico.org
+      - BAMBOOFW_MONGODB_NAME={{ mongo_database }}
+      - BAMBOOFW_MONGODB_URI=mongodb://{{ mongo_root_user }}:{{ mongo_root_passwd }}@mongodb:27017/?authSource=admin
+
+  be:
+    image: bamboofirewall/be:{{ be_ver }}
+    restart: always
+    depends_on:
+      - mongodb
+    container_name: "be"
+    environment:
+      - ACCESS_TOKEN_EXPIRY_HOUR=2
+      - ACCESS_TOKEN_SECRET={{ access_token }}
+      - ADMIN_PASSWORD={{ admin_passwd }}
+      - APP_ENV=release
+      - CONTEXT_TIMEOUT=2
+      - DB_NAME={{ mongo_database }}
+      - MONGO_URI=mongodb://{{ mongo_root_user }}:{{ mongo_root_passwd }}@mongodb:27017/?authSource=admin
+      - PORT=9091
+      - REFRESH_TOKEN_EXPIRY_HOUR=168
+      - REFRESH_TOKEN_SECRET={{ refresh_token }}
+      - SERVER_ADDRESS=:9091
+    ports:
+      - 9091:9091
+
+  besetup:
+    image: bamboofirewall/be:{{ be_ver }}
+    restart: "no"
+    depends_on:
+      - mongodb
+    container_name: "besetup"
+    environment:
+      - ACCESS_TOKEN_EXPIRY_HOUR=2
+      - ACCESS_TOKEN_SECRET={{ access_token }}
+      - ADMIN_PASSWORD={{ admin_passwd }}
+      - APP_ENV=release
+      - CONTEXT_TIMEOUT=2
+      - DB_NAME={{ mongo_database }}
+      - MONGO_URI=mongodb://{{ mongo_root_user }}:{{ mongo_root_passwd }}@mongodb:27017/?authSource=admin
+      - PORT=9091
+      - REFRESH_TOKEN_EXPIRY_HOUR=168
+      - REFRESH_TOKEN_SECRET={{ refresh_token }}
+      - SERVER_ADDRESS=:9091
+    entrypoint: [ "/app/create_admin"]  
+
+  fe:
+    image: bamboofirewall/fe:{{ fe_ver }}
+    restart: always
+    container_name: "fe"
+    depends_on:
+      - be
+    environment:
+      - NEXT_PUBLIC_APP_URL=http://0.0.0.0:3000/
+      - NEXT_PUBLIC_BAMBOO_API_URL=http://{{ ansible_ssh_host }}:9091
+    ports:
+      - 3000:3000
+
+volumes:
+  mongodb:
+  etcd1:
+  etcd2:
+  etcd3:

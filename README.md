@@ -17,7 +17,7 @@ provides many functions for centralized policy setting as tag, label, range, ann
 You can join the following groups or channels to discuss or ask questions about Bamboo Firewall, and to keep yourself
 informed of the latest Bamboo Firewall updates:
 
-- Seek help when you use TiDB
+- Seek help when you use BambooFW
     - Slack
       channels: [#everyone (Vietnamese, English)](https://join.slack.com/t/bamboo-firewall/shared_invite/zt-207jwcvcl-tIXUfYBKoe6TNPcce6iqXw)
 
@@ -27,7 +27,9 @@ informed of the latest Bamboo Firewall updates:
 
 # Architecture
 
-![Bamboo Firewall architecture](./imgs/architecture/architecture.png)
+<p align="center">
+  <img src="./imgs/architecture/architecture.png"/>
+</p>
 
 - etcd cluster: Where stores metadata of bamboo firewall. ex: server endpoint, network zone, policies
 - backend (be): API backend server. It provides API for frontend
@@ -38,202 +40,73 @@ informed of the latest Bamboo Firewall updates:
 
 # How to installation
 
-- Step 1: Install etcd cluster
-- Step 2: Install MongoDB (stand-alone or replication)
-- step 3: Install frontend, watcher and backend
-- step 4: Install agent to server which you want to apply polices and rules of firewall
-- step 5: write rules as code then apply to bamboo firewall
+- **Step 1**: Install etcd cluster
+- **Step 2**: Install MongoDB (stand-alone or replication)
+- **Step 3**: Install frontend, watcher and backend
+- **Step 4**: Install agent to server which you want to apply polices and rules of firewall
+- **Step 5**: write rules as code then apply to bamboo firewall
 
-For example: We have 7 servers below
+- For example: We have 7 servers below
 
-| No  | HOSTNAME   | IPADDR         | INTERFACES | ROLE       | ZONE | PROJECT | NAMESPCE |
-|-----|------------|----------------|------------|------------|----------|---------|----------|
-| 1   | db[01-02]  | 10.110.1.[1-2] | eth01      | db         | white|  example  |  production |
-| 2   | app[01-02] | 10.110.2.[1-2] | eth01      | app        | green|  example  |  production |
-| 3   | lb[01-02]  | 10.110.3.[1-2] | eth01      | lb         | black|   example |  production |
-| 4   | admin01    | 10.110.8.1     | eth01      | management | gray|   example  |  production |
+| No  | HOSTNAME   | IPADDR             | INTERFACES | ROLE       | ZONE | PROJECT    | NAMESPCE    |
+|-----|------------|--------------------|------------|------------|------|----------- |-------------|
+| 1   | admin01    | 192.168.56.5       | eth1       | management | gray |  example   |  production |
+| 2   | lb[01-02]  | 192.168.56.[11-12] | eth1       | lb         | black|  example   |  production |
+| 3   | app[01-02] | 192.168.56.[21-22] | eth1       | app        | green|  example   |  production |
+| 4   | db[01-02]  | 192.168.56.[31-32] | eth1       | db         | white|  example   |  production |
 
 
 | No  | IP SRC              | PORT SRC | IP DST              | PORT DST | PROTO   | Details         |
 |-----|---------------------|----------|---------------------|----------|---------|-----------------|
-| 1   | 10.110.2.[1-2]      | any      | 10.110.1.[1-2]      | 3306     | TCP     | APP to DB       |
-| 2   | any                 | any      | 10.110.3.[1-2]      | 443,80   | TCP     | Public Internet |
-| 3   | 10.110.3.[1-2]      | any      | 10.110.2.[1-2]      | 80,443   | TCP     | LB to APP       |
+| 1   | any                 | any      | 192.168.56.[11-12]  | 443,80   | TCP     | Public Internet |
+| 2   | 192.168.56.[11-12]  | any      | 192.168.56.[21-22]  | 80,443   | TCP     | LB to APP       |
+| 3   | 192.168.56.[21-22]  | any      | 192.168.56.[31-32]  | 3306     | TCP     | APP to DB       |
 | 4   | all-example-servers | any      | any                 | 123,53   | UDP/TCP | DNS and NTP     |
-| 5   | 10.110.8.1          | any      | all-example-servers | any      | UDP/TCP | Management      |
+| 5   | 192.168.56.5        | any      | all-example-servers | any      | UDP/TCP | Management      |
 
-- [make a folder to store code](./demo/bbfw):
-
-```shell
-mkdir bbfw bbfw/hep bbfw/gns bbfw/gnp
+- Struct folder to store rules:
+```sh
+.
+├── gnp
+│   ├── app-example.yaml
+│   ├── basic-example.yaml
+│   ├── db-example.yaml
+│   └── lb-example.yaml
+├── gns
+│   ├── black.yaml
+│   ├── gray.yaml
+│   ├── green.yaml
+│   └── white.yaml
+├── hep
+│   ├── 192.168.56.11-eth1.yaml
+│   ├── 192.168.56.12-eth1.yaml
+│   ├── 192.168.56.21-eth1.yaml
+│   ├── 192.168.56.22-eth1.yaml
+│   ├── 192.168.56.31-eth1.yaml
+│   ├── 192.168.56.32-eth1.yaml
+│   └── 192.168.56.5-eth1.yaml
 ```
 
-- create hostEndpoint
-
-```shell
-cd bbfw/hep
-cat <<EOF >>10.110.1.1-eth0.yaml
+- Detail example hostEndpoint
+```sh
 apiVersion: projectcalico.org/v3
 kind: HostEndpoint
 metadata:
-  name: 10.110.1.1
-  labels:
-    role: db
-    zone: white
-    namespace: production
-    project: example
-    ip: 10.110.1.1
-spec:
-  node: db01
-  interfaceName: eth0
-  expectedIPs: ["10.110.1.1"]
-EOF
-
-cat <<EOF >>10.110.1.2-eth0.yaml
-apiVersion: projectcalico.org/v3
-kind: HostEndpoint
-metadata:
-  name: 10.110.1.2
-  labels:
-    role: db
-    zone: white
-    namespace: production
-    project: example
-    ip: 10.110.1.2
-spec:
-  node: db02
-  interfaceName: eth0
-  expectedIPs: ["10.110.1.2"]
-EOF
-
-cat <<EOF >>10.110.2.1-eth0.yaml
-apiVersion: projectcalico.org/v3
-kind: HostEndpoint
-metadata:
-  name: 10.110.2.1
-  labels:
-    role: app
-    zone: white
-    namespace: production
-    project: example
-    ip: 10.110.2.1
-spec:
-  node: app01
-  interfaceName: eth0
-  expectedIPs: ["10.110.2.1"]
-EOF
-
-cat <<EOF >>10.110.2.2-eth0.yaml
-apiVersion: projectcalico.org/v3
-kind: HostEndpoint
-metadata:
-  name: 10.110.2.2
-  labels:
-    role: app
-    zone: white
-    namespace: production
-    project: example
-    ip: 10.110.2.2
-spec:
-  node: app02
-  interfaceName: eth0
-  expectedIPs: ["10.110.2.2"]
-EOF
-
-cat <<EOF >>10.110.3.1-eth0.yaml
-apiVersion: projectcalico.org/v3
-kind: HostEndpoint
-metadata:
-  name: 10.110.3.1
-  labels:
-    role: lb
-    zone: black
-    namespace: production
-    project: example
-    ip: 10.110.3.1
-spec:
-  node: lb01
-  interfaceName: eth0
-  expectedIPs: ["10.110.3.1"]
-EOF
-
-cat <<EOF >>10.110.3.2-eth0.yaml
-apiVersion: projectcalico.org/v3
-kind: HostEndpoint
-metadata:
-  name: 10.110.3.2
-  labels:
-    role: lb
-    zone: black
-    namespace: production
-    project: example
-    ip: 10.110.3.2
-spec:
-  node: lb02
-  interfaceName: eth0
-  expectedIPs: ["10.110.3.2"]
-EOF
-
-cat <<EOF >>10.110.8.1-eth0.yaml
-apiVersion: projectcalico.org/v3
-kind: HostEndpoint
-metadata:
-  name: 10.110.8.1
+  name: 192.168.56.5
   labels:
     role: management
     zone: gray
     namespace: production
     project: example
-    ip: 10.110.8.1
+    ip: 192.168.56.5
 spec:
-  node: admin01
-  interfaceName: eth0
-  expectedIPs: ["10.110.8.1"]
-EOF
+  node: manage-aio
+  interfaceName: eth1
+  expectedIPs: ["192.168.56.5"]
 ```
 
-- create zones
-```shell
-cat <<EOF >>gray.yaml
-apiVersion: projectcalico.org/v3
-kind: GlobalNetworkSet
-metadata:
-  name: gray
-  labels:
-    zone: gray
-    name: gray
-spec:
-  nets:
-    - 10.110.8.0/24
-EOF
-
-cat <<EOF >>white.yaml
-apiVersion: projectcalico.org/v3
-kind: GlobalNetworkSet
-metadata:
-  name: white
-  labels:
-    zone: white
-    name: white
-spec:
-  nets:
-    - 10.110.1.0/24
-EOF
-
-cat <<EOF >>green.yaml
-apiVersion: projectcalico.org/v3
-kind: GlobalNetworkSet
-metadata:
-  name: green
-  labels:
-    zone: green
-    name: green
-spec:
-  nets:
-    - 10.110.2.0/24
-EOF
-
-cat <<EOF >>black.yaml
+- Detail example globalNetworkSets
+```sh
 apiVersion: projectcalico.org/v3
 kind: GlobalNetworkSet
 metadata:
@@ -243,62 +116,12 @@ metadata:
     name: black
 spec:
   nets:
-    - 10.110.3.0/24
-EOF
+    - 192.168.56.11/32
+    - 192.168.56.12/32
 ```
-- create polices
-```shell
-cat <<EOF >>db-example.yaml
-apiVersion: projectcalico.org/v3
-kind: GlobalNetworkPolicy
-metadata:
-  name: 'db-example'
-spec:
-  selector: ((role == 'db') && (project == 'example'))
-  ingress:
-    - action: Allow
-      protocol: TCP
-      source:
-        selector: ((role == 'app') && (project == 'example'))
-      destination:
-        ports: [3306]
-    - action: Allow
-      protocol: TCP
-      source:
-        selector: ((role == 'db') && (project == 'example'))
-      destination:
-        ports: [3306]      
-  egress:
-    - action: Allow
-      protocol: TCP
-      source:
-        selector: ((role == 'db') && (project == 'example'))
-      destination:
-        selector: ((role == 'db') && (project == 'example'))
-        ports: [3306]
-EOF
 
-cat <<EOF >>lb-example.yaml
-apiVersion: projectcalico.org/v3
-kind: GlobalNetworkPolicy
-metadata:
-  name: 'lb-example'
-spec:
-  selector: ((role == 'lb') && (project == 'example'))
-  ingress:
-    - action: Allow
-      protocol: TCP
-      destination:
-        ports: [80,443]    
-  egress:
-    - action: Allow
-      protocol: TCP
-      destination:
-        selector: ((role == 'app') && (project == 'example'))
-        ports: [80,443]
-EOF
-
-cat <<EOF >>app-example.yaml
+- Detail example globalNetworkPolicy
+```sh
 apiVersion: projectcalico.org/v3
 kind: GlobalNetworkPolicy
 metadata:
@@ -318,43 +141,53 @@ spec:
       destination:
         selector: ((role == 'db') && (project == 'example'))
         ports: [3306]
-EOF
-
-cat <<EOF >>basic-example.yaml
-apiVersion: projectcalico.org/v3
-kind: GlobalNetworkPolicy
-metadata:
-  name: 'basic-example'
-spec:
-  selector: (project == 'example')) 
-  egress:
-    - action: Allow
-      protocol: TCP
-      source:
-        selector: (project == 'example'))
-      destination:
-        selector: (project == 'example'))
-        ports: [53,123]
-    - action: Allow
-      protocol: UDP
-      source:
-        selector: (project == 'example'))
-      destination:
-        selector: (project == 'example'))
-        ports: [53,123]
-EOF
 ```
+
+- Deploy node manage 
+```sh 
+export ANSIBLE_HOST_KEY_CHECKING=False; ansible-playbook site.yml -i inventories/production/hosts.ini -l manage_aio -t manage_aio
+```
+
+- Check deploy node manage AIO 
+```sh 
+root@manage-aio:~# docker ps
+CONTAINER ID   IMAGE                           COMMAND                  CREATED          STATUS          PORTS                                                                          NAMES
+ce932a04246c   bamboofirewall/fe:v0.0.1        "docker-entrypoint.s…"   37 minutes ago   Up 37 minutes   0.0.0.0:3000->3000/tcp, :::3000->3000/tcp                                      fe
+b5bd83d4ffa7   bamboofirewall/be:v0.0.1        "/app/calicobe"          37 minutes ago   Up 37 minutes   0.0.0.0:9091->9091/tcp, :::9091->9091/tcp                                      be
+d4a79197e15c   bamboofirewall/watcher:v0.0.2   "/app/watcher"           37 minutes ago   Up 37 minutes                                                                                  watcher
+f2ff45a711aa   bamboofirewall/cli:v0.0.1       "tail -f /dev/null"      37 minutes ago   Up 37 minutes                                                                                  cli
+7d4e609807a4   mongo:6.0-jammy                 "docker-entrypoint.s…"   37 minutes ago   Up 37 minutes   27017/tcp                                                                      mongodb
+0cb0005c33d7   quay.io/coreos/etcd:v3.5.9      "/usr/local/bin/etcd…"   37 minutes ago   Up 37 minutes   2379-2380/tcp, 0.0.0.0:2383-2384->2383-2384/tcp, :::2383-2384->2383-2384/tcp   etcd3
+2037b456b535   quay.io/coreos/etcd:v3.5.9      "/usr/local/bin/etcd…"   37 minutes ago   Up 37 minutes   2379-2380/tcp, 0.0.0.0:2381-2382->2381-2382/tcp, :::2381-2382->2381-2382/tcp   etcd2
+165da3f19ed8   quay.io/coreos/etcd:v3.5.9      "/usr/local/bin/etcd…"   37 minutes ago   Up 37 minutes   0.0.0.0:2379-2380->2379-2380/tcp, :::2379-2380->2379-2380/tcp                  etcd1
+root@manage-aio:~# 
+```
+
+- Deploy client 
+```sh 
+export ANSIBLE_HOST_KEY_CHECKING=False; ansible-playbook site.yml -i inventories/production/hosts.ini -l manage_aio -t manage_aio
+```
+
 - Apply policies to endpoints
-```shell
+```sh
+docker exec -it cli bash 
+cd /demo
 calicoctl apply -f [FILE_NAME].yaml
 ```
+
 - Check hostEndpoint and Policies
-```shell
+```sh
 calicoctl get hep
 calicoctl get gns
 calicoctl get gnp
 ```
-And view on your webview
+
+- And view on your webview
+<p align="center">
+  <img src="./imgs/bamboofw.png"/>
+</p>
+
+
 # About us
 
 - [bienkma](https://bienkma.github.io) - Founder
