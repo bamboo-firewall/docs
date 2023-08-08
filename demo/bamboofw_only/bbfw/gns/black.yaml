@@ -1,0 +1,11 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkSet
+metadata:
+  name: black
+  labels:
+    zone: black
+    name: black
+spec:
+  nets:
+    - 192.168.56.11/32
+    - 192.168.56.12/32

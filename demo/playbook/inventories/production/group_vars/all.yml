@@ -8,8 +8,8 @@ docker_compose_ver: "v2.20.2"
 #----------------
 etcd_ver: "v3.5.9"
 mongo_ver: "6.0-jammy"
-be_ver: "v0.0.1"
-fe_ver: "v0.0.1"
+be_ver: "v0.0.2"
+fe_ver: "v0.0.2"
 cli_ver: "v0.0.1"
 watcher_ver: "v0.0.2"
 
@@ -91,7 +91,7 @@ mongo_database: bamboofw
 #----------------
 # Bamboofirewall
 #----------------
-# admin_user: admin@example.com 
+# admin_user: admin
 admin_passwd: change_me_now
 access_token: change_me_now
 refresh_token: change_me_now
