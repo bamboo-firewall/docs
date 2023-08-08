@@ -1,0 +1,95 @@
+---
+- name: Build hosts file
+  lineinfile:
+    path: /etc/hosts
+    line: '{{ ansible_ssh_host }} {{ name }}'
+    create: true
+  tags: update_hostname
+
+- name: Set hostname 
+  hostname:
+    name: "{{ name }}"
+
+- name: Build hosts file for etcd
+  lineinfile:
+    path: /etc/hosts
+    line: '{{ item }}'
+    create: yes
+  loop:
+  - "{{ manage_node }} etcd1"
+  - "{{ manage_node }} etcd2"
+  - "{{ manage_node }} etcd3"
+
+- name: Update cache
+  apt:
+    update_cache: true
+    upgrade: true
+
+- name: "Install ipset"
+  apt: 
+    name: ipset
+    state: present
+    update_cache: yes
+
+- name: Download bamboofw-agent
+  get_url:
+    url: https://github.com/bamboo-firewall/calico/releases/download/v0.0.1/calico-felix-amd64.tar.gz
+    dest: /tmp/calico-felix-amd64.tar.gz
+    mode: '0644'
+
+- name: Extract felix bin file
+  unarchive:
+    src: /tmp/calico-felix-amd64.tar.gz
+    dest: /usr/local/bin/
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: True
+
+- name: "Create directory for calico configuration"
+  file:
+    path: /etc/calico
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: "Create configuration file for calico"
+  template:
+    src: templates/felix.cfg.j2
+    dest: /etc/calico/felix.cfg
+    owner: root
+    group: root
+    mode: 0600
+
+- name: "Create directory for calico SSL configuration"
+  file:
+    path: /etc/calico/ssl
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy ssl file 
+  copy:
+    content: "{{ item.file_var }}"
+    dest: "/etc/calico/ssl/{{ item.file_name }}"
+  with_items:
+    - { file_var: "{{ ca_cert }}", file_name: ca.pem }
+    - { file_var: "{{ cert }}", file_name: etcd.pem }
+    - { file_var: "{{ key }}", file_name: etcd-key.pem }  
+
+- name: "Create a calico service"
+  template:
+    src: templates/calico.service.j2
+    dest: /lib/systemd/system/calico-felix.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "Reload calico service"
+  systemd:
+    name: calico-felix
+    state: restarted
+    daemon_reload: true
+    enabled: true

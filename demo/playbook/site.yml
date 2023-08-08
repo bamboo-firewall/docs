@@ -1,12 +1,12 @@
 ---
-- hosts: etcd
+- hosts: manage_aio
   become: yes
   strategy: linear
   roles:
-  - {role: etcd, tags: etcd}
+  - {role: manage_aio, tags: manage_aio}
 
-- hosts: bamboofw-agent
+- hosts: bamboofw_agent
   become: yes
   strategy: linear
   roles:
-  - {role: bamboofw-agent, tags: bamboofw-agent}
+  - {role: bamboofw_agent, tags: bamboofw_agent}

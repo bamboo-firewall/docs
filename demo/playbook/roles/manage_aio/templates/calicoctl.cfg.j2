@@ -1,0 +1,14 @@
+apiVersion: projectcalico.org/v3
+kind: CalicoAPIConfig
+metadata:
+spec:
+  etcdUsername: {{ root_etcd_user }}
+  etcdPassword: {{ root_etcd_passwd }}
+  datastoreType: etcdv3
+  etcdEndpoints: "https://etcd1:2379,https://etcd2:2381,https://etcd3:2383"
+  etcdCACert: |
+    {{ ca_cert | indent(4) | trim }}
+  etcdCert: |
+    {{ cert | indent(4) | trim }}
+  etcdKey: |
+    {{ key | indent(4) | trim }}
