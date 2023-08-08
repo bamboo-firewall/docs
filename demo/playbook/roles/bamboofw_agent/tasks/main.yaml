@@ -1,4 +1,15 @@
 ---
+- name: Build hosts file
+  lineinfile:
+    path: /etc/hosts
+    line: '{{ ansible_ssh_host }} {{ name }}'
+    create: true
+  tags: update_hostname
+
+- name: Set hostname 
+  hostname:
+    name: "{{ name }}"
+
 - name: Build hosts file for etcd
   lineinfile:
     path: /etc/hosts
@@ -8,6 +19,11 @@
   - "{{ manage_node }} etcd1"
   - "{{ manage_node }} etcd2"
   - "{{ manage_node }} etcd3"
+
+- name: Update cache
+  apt:
+    update_cache: true
+    upgrade: true
 
 - name: "Install ipset"
   apt: 

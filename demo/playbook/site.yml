@@ -3,12 +3,10 @@
   become: yes
   strategy: linear
   roles:
-  - {role: common, tags: common}
   - {role: manage_aio, tags: manage_aio}
 
 - hosts: bamboofw_agent
   become: yes
   strategy: linear
   roles:
-  - {role: common, tags: common}
   - {role: bamboofw_agent, tags: bamboofw_agent}

@@ -46,7 +46,7 @@ informed of the latest Bamboo Firewall updates:
 - **Step 4**: Install agent to server which you want to apply polices and rules of firewall
 - **Step 5**: write rules as code then apply to bamboo firewall
 
-- For example: We have 7 servers below
+- For example: We have 7 servers below [Prepare demo server](./demo/vagrant/README.md)
 
 | No  | HOSTNAME   | IPADDR             | INTERFACES | ROLE       | ZONE | PROJECT    | NAMESPCE    |
 |-----|------------|--------------------|------------|------------|------|----------- |-------------|
@@ -145,7 +145,8 @@ spec:
 
 - Deploy node manage 
 ```sh 
-export ANSIBLE_HOST_KEY_CHECKING=False; ansible-playbook site.yml -i inventories/production/hosts.ini -l manage_aio -t manage_aio
+cd demo/playbook
+ansible-playbook site.yml -l manage_aio
 ```
 
 - Check deploy node manage AIO 
@@ -165,14 +166,15 @@ root@manage-aio:~#
 
 - Deploy client 
 ```sh 
-export ANSIBLE_HOST_KEY_CHECKING=False; ansible-playbook site.yml -i inventories/production/hosts.ini -l manage_aio -t manage_aio
+cd demo/playbook
+ansible-playbook site.yml -l bamboogw_agent
 ```
 
 - Apply policies to endpoints
 ```sh
+# SSH to manage-aio node and run
 docker exec -it cli bash 
-cd /demo
-calicoctl apply -f [FILE_NAME].yaml
+bash /bamboofw/demo/init.sh
 ```
 
 - Check hostEndpoint and Policies
@@ -183,8 +185,32 @@ calicoctl get gnp
 ```
 
 - And view on your webview
+Overview
 <p align="center">
-  <img src="./imgs/bamboofw.png"/>
+  <img src="./imgs/bamboofirewall/overview.png"/>
+</p>
+
+GNP
+<p align="center">
+  <img src="./imgs/bamboofirewall/gnp_1.png"/>
+</p>
+
+<p align="center">
+  <img src="./imgs/bamboofirewall/gnp_2.png"/>
+</p>
+
+HEP
+<p align="center">
+  <img src="./imgs/bamboofirewall/hep.png"/>
+</p>
+
+<p align="center">
+  <img src="./imgs/bamboofirewall/hep.png"/>
+</p>
+
+GNS
+<p align="center">
+  <img src="./imgs/bamboofirewall/gns.png"/>
 </p>
 
 
