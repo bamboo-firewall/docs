@@ -1,0 +1,14 @@
+apiVersion: projectcalico.org/v3
+kind: HostEndpoint
+metadata:
+  name: 192.168.56.5
+  labels:
+    role: management
+    zone: gray
+    namespace: production
+    project: example
+    ip: 192.168.56.5
+spec:
+  node: manage-aio
+  interfaceName: eth1
+  expectedIPs: ["192.168.56.5"]

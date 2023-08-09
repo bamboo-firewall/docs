@@ -151,7 +151,7 @@
       #             Login information             #
       # ========================================= #
       # URL: http://{{ ansible_ssh_host }}:3000
-      # Username: admin@example.com
+      # Username: admin
       # Password: {{ admin_passwd }}
       # ========================================= #
   debug:

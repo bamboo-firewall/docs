@@ -38,6 +38,31 @@ informed of the latest Bamboo Firewall updates:
 - Agent: Agent installed each server and connect to etcd cluster to apply policies
 - watcher: A job watch events from etcd to mongodb database (one way)
 
+# Local demo only bamboofw 
+Install 
+```sh 
+cd demo/bamboofw_only
+docker-compose up -d
+```
+- Login `localhost:3000` with user `admin` and defaut password `change_me`
+
+- Overview 
+<p align="center">
+  <img src="./imgs/bamboofirewall/overview_na.png"/>
+</p>
+
+- Apply policies to endpoints
+```sh
+# SSH to manage-aio node and run
+docker exec -it cli bash 
+bash /bamboofw/demo/init.sh
+```
+
+<p align="center">
+  <img src="./imgs/bamboofirewall/overview.png"/>
+</p>
+
+
 # How to installation
 
 - **Step 1**: Install etcd cluster
@@ -146,7 +171,7 @@ spec:
 - Deploy node manage 
 ```sh 
 cd demo/playbook
-ansible-playbook site.yml -l manage_aio
+ansible-playbook site.yml -l manage_aio -t manage_aio
 ```
 
 - Check deploy node manage AIO 
