@@ -38,10 +38,10 @@ informed of the latest Bamboo Firewall updates:
 - Agent: Agent installed each server and connect to etcd cluster to apply policies
 - watcher: A job watch events from etcd to mongodb database (one way)
 
-# Local demo only bamboofw 
+# bamboofw without agents for quickly setup development env
 Install 
 ```sh 
-cd demo/bamboofw_only
+cd demo/bamboofw_without_agent
 docker-compose up -d
 ```
 - Login `localhost:3000` with user `admin` and defaut password `change_me`
