@@ -56,7 +56,6 @@ services:
       - ETCD_BAMBOOFW_PASSWORD=bamboofw_change_me_now
       - ETCD_BAMBOOFW_USER=bamboofw
     volumes:
-      - /etc/hosts:/etc/hosts
       - ./ssl:/etc/etcd/ssl
       - ./conf/calicoctl.cfg:/etc/calico/calicoctl.cfg
       - ./bbfw/:/bamboofw/demo
