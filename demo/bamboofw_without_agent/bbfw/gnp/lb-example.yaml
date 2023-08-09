@@ -1,0 +1,17 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: 'lb-example'
+spec:
+  selector: ((role == 'lb') && (project == 'example'))
+  ingress:
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports: [80,443]    
+  egress:
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: ((role == 'app') && (project == 'example'))
+        ports: [80,443]

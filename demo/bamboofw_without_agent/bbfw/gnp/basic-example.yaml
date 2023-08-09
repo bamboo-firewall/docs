@@ -1,0 +1,21 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: 'basic-example'
+spec:
+  selector: (project == 'example')
+  egress:
+    - action: Allow
+      protocol: TCP
+      source:
+        selector: (project == 'example')
+      destination:
+        selector: (project == 'example')
+        ports: [53,123]
+    - action: Allow
+      protocol: UDP
+      source:
+        selector: (project == 'example')
+      destination:
+        selector: (project == 'example')
+        ports: [53,123]
