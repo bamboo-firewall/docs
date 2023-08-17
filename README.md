@@ -21,6 +21,80 @@ informed of the latest Bamboo Firewall updates:
     - Slack
       channels: [#everyone (Vietnamese, English)](https://join.slack.com/t/bamboo-firewall/shared_invite/zt-207jwcvcl-tIXUfYBKoe6TNPcce6iqXw)
 
+# Client OS Supported
+<table>
+<thead>
+  <tr>
+    <th>OS</th>
+    <th>Versions</th>
+    <th>Verify by</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td rowspan="3">Ubuntu</td>
+    <td>Ubuntu 18.04 x64</td>
+    <td>OK in GHTK</td>
+  </tr>
+  <tr>
+    <td>Ubuntu 20.04 x64</td>
+    <td>OK in GHTK</td>
+  </tr>
+  <tr>
+    <td>Ubuntu 22.04 x64</td>
+    <td>OK in GHTK</td>
+  </tr>
+  <tr>
+    <td rowspan="3">CentOS</td>
+    <td>CentOS 7</td>
+    <td>Under checking</td>
+  </tr>
+  <tr>
+    <td>CentOS 8 Stream</td>
+    <td>Under checking</td>
+  </tr>
+  <tr>
+    <td>CentOS 9 Stream</td>
+    <td>Under checking</td>
+  </tr>
+  <tr>
+    <td rowspan="3">RHEL</td>
+    <td>RHEL 7</td>
+    <td>Under checking</td>
+  </tr>
+  <tr>
+    <td>RHEL 8</td>
+    <td>Under checking</td>
+  </tr>
+  <tr>
+    <td>RHEL 9</td>
+    <td>Under checking</td>
+  </tr>
+  <tr>
+    <td rowspan="3">Debian</td>
+    <td>Debian 8</td>
+    <td>Under checking</td>
+  </tr>
+  <tr>
+    <td>Debian 9</td>
+    <td>Under checking</td>
+  </tr>
+  <tr>
+    <td>Debian 10</td>
+    <td>Under checking</td>
+  </tr>
+  <tr>
+    <td rowspan="2">FreeBSD</td>
+    <td>FreeBSD 12.x</td>
+    <td>Under checking</td>
+  </tr>
+  <tr>
+    <td>FreeBSD 13.x</td>
+    <td>Under checking</td>
+  </tr>
+</tbody>
+</table>
+
 # Case studies
 
 - [Bamboo Firewall at GHTK](./case-studies/ghtk.md)
