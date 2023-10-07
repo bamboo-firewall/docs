@@ -2,8 +2,11 @@
 
 - [What is Bamboo Firewall?](#What-is-Bamboo-Firewall?)
 - [Community](#Community)
+- [Client OS Supported](#Client-OS-Supported)
 - [Case studies](#Case-studies)
 - [Architecture](#Architecture)
+- [Resouces used](#Resouces-used)
+- [Development roadmap](#Development-roadmap)
 - [License](#License)
 
 # What is Bamboo Firewall?
@@ -312,6 +315,28 @@ GNS
   <img src="./imgs/bamboofirewall/gns.png"/>
 </p>
 
+# Resouces used
+
+<p align="center">
+  <img src="./imgs/bamboofirewall/resources.png"/>
+</p>
+
+# Development roadmap
+
+- Support multiOS 
+<p align="center">
+  <img src="./imgs/bamboofirewall/multi-os.png"/>
+</p>
+
+- Define policy on GUI 
+<p align="center">
+  <img src="./imgs/bamboofirewall/create-rule-on-gui.png"/>
+</p>
+
+- View policy between servers/groups as a diagram
+<p align="center">
+  <img src="./imgs/bamboofirewall/rule-diagram.png"/>
+</p>
 
 # About us
 
