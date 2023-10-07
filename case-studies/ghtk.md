@@ -6,3 +6,8 @@
 - etcd database: 245MB (etcd) stores metadata policies, hostEndpoint
 - start time: 10/2022 - now
 - [Policy as code with bamboo firewall](./PaC-with-bamboofw.pdf)
+
+Resouce used 
+<p align="center">
+  <img src="../imgs/bamboofirewall/resources.png"/>
+</p>
