@@ -119,7 +119,10 @@ informed of the latest Bamboo Firewall updates:
 Install 
 ```sh 
 cd demo/bamboofw_without_agent
-docker-compose up -d
+# Get current IP & sed to docker-compose 
+IP=$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p') \
+&& sed -Ei "s|DEMO_IP|$IP|g" docker-compose.yaml \
+&& docker-compose up -d
 ```
 - Login `localhost:3000` with user `admin` and defaut password `change_me`
 
@@ -132,6 +135,8 @@ docker-compose up -d
 ```sh
 # SSH to manage-aio node and run
 docker exec -it cli bash 
+calicoctl datastore migrate lock
+calicoctl datastore migrate unlock
 bash /bamboofw/demo/init.sh
 ```
 
@@ -276,6 +281,8 @@ ansible-playbook site.yml -l bamboogw_agent
 ```sh
 # SSH to manage-aio node and run
 docker exec -it cli bash 
+calicoctl datastore migrate lock
+calicoctl datastore migrate unlock
 bash /bamboofw/demo/init.sh
 ```
 

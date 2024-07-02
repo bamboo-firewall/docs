@@ -165,8 +165,8 @@ services:
     depends_on:
       - be
     environment:
-      - NEXT_PUBLIC_APP_URL=http://0.0.0.0:3000/
-      - NEXT_PUBLIC_BAMBOO_API_URL=http://localhost:9091
+      - NEXT_PUBLIC_APP_URL=http://DEMO_IP:3000/
+      - NEXT_PUBLIC_BAMBOO_API_URL=http://DEMO_IP:9091
     ports:
       - 3000:3000
 
