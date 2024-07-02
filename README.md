@@ -269,7 +269,7 @@ root@manage-aio:~#
 - Deploy client 
 ```sh 
 cd demo/playbook
-ansible-playbook site.yml -l bamboogw_agent
+ansible-playbook site.yml -l bamboofw_agent -t bamboofw_agent
 ```
 
 - Apply policies to endpoints
