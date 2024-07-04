@@ -5,6 +5,7 @@
 - [Table of contents](#table-of-contents)
 - [CentOS 7 guide](#centos-7-guide)
 - [CentOS 9 Stream guide](#centos-9-stream-guide)
+- [CentOS 8 Stream guide](#centos-9-stream-guide)
 
 # CentOS 7 guide
 
@@ -55,8 +56,12 @@
 
 **Ansible playbook**
 - Has been updated.
+- Set name to main before using
 
 # CentOS 9 Stream guide
+- Using the same playbook with CentOS 7
 
+# CentOS 8 Stream guide
+- Using the dedicated playbook (centos 8 playbook)
 
 [def]: #how-to-install-bamboo-firewall-on-centos-7-8-stream-and-9-stream
