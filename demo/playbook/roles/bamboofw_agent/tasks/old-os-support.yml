@@ -1,0 +1,45 @@
+---
+- name: Debug playbook invocation
+  debug:
+    msg: "Preparation task for old OS"
+
+- name: Adding CentosOS vault repository
+  shell: sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo && sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo
+
+- name: Setup glibc
+  block:
+    - name: Copy the library file
+      copy:
+        src: /roles/bamboofw_agent/files/glibc-2.22.tar.bz2
+        dest: /usr/local
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Extract glibc
+      unarchive:
+        src: /usr/local/glibc-2.22.tar.bz2
+        dest: /usr/local
+        owner: root
+        group: root
+        mode: 0600
+        decrypt: True
+        remote_src: True
+
+- name: Setup patchelf
+  block:
+    - name: Remove any pre-installed version of patchelf
+      yum:
+        name: patchelf
+        state: absent
+    - name: Copy rpm file
+      copy:
+        src: /roles/bamboofw_agent/files/patchelf-0.12-1.el7.x86_64.rpm
+        dest: /tmp/
+        owner: root
+        group: root
+        mode: 0600
+        remote_src: True
+    
+    - name: Install patchelf
+      shell: yum install -y /tmp/patchelf-0.12-1.el7.x86_64.rpm

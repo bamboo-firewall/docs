@@ -50,28 +50,28 @@ informed of the latest Bamboo Firewall updates:
   <tr>
     <td rowspan="3">CentOS</td>
     <td>CentOS 7</td>
-    <td>Under checking</td>
+    <td>Verified</td>
   </tr>
   <tr>
     <td>CentOS 8 Stream</td>
-    <td>Under checking</td>
+    <td>Verified</td>
   </tr>
   <tr>
     <td>CentOS 9 Stream</td>
-    <td>Under checking</td>
+    <td>Verified</td>
   </tr>
   <tr>
     <td rowspan="3">RHEL</td>
     <td>RHEL 7</td>
-    <td>Under checking</td>
+    <td>Verified</td>
   </tr>
   <tr>
     <td>RHEL 8</td>
-    <td>Under checking</td>
+    <td>Verified</td>
   </tr>
   <tr>
     <td>RHEL 9</td>
-    <td>Under checking</td>
+    <td>Verified</td>
   </tr>
   <tr>
     <td rowspan="3">Debian</td>

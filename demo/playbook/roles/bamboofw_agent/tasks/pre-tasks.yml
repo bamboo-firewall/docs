@@ -1,0 +1,27 @@
+---
+- name: Debug playbook invocation
+  debug:
+    msg: "This playbook is executed since host's OS is RedHat family"
+
+- name: Gather facts from remote machine
+  set_fact:
+    os_major_version: "{{ ansible_facts['distribution_version'].split('.')[0] }}"
+
+- name: Build some packages from source if distribution is too old
+  import_tasks: roles/bamboofw_agent/tasks/old-os-support.yml
+  when: os_major_version == '7'
+
+- name: Install GCC and pre-requiste tools and packages
+  block:
+    - name: Install developer tools
+      shell: yum group install -y "Development Tools"
+    
+    - name: Install neccessary tools
+      yum:
+        name:
+        - wget
+        - yum-utils
+        - ipset
+        - wget
+        state: present
+        update_cache: yes
