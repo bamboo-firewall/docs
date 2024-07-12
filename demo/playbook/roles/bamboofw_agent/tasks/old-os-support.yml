@@ -6,11 +6,29 @@
 - name: Adding CentosOS vault repository
   shell: sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo && sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo
 
+- name: Setup unzip
+  block:
+    - name: Remove any pre-installed version of patchelf
+      yum:
+        name: unzip
+        state: absent
+    - name: Copy rpm file
+      copy:
+        src: roles/bamboofw_agent/files/unzip-6.0-19.el7.x86_64.rpm
+        dest: /tmp/
+        owner: root
+        group: root
+        mode: 0600
+        remote_src: True
+    
+    - name: Install patchelf
+      shell: yum install -y /tmp/unzip-6.0-19.el7.x86_64.rpm
+
 - name: Setup glibc
   block:
     - name: Copy the library file
       copy:
-        src: /roles/bamboofw_agent/files/glibc-2.22.tar.bz2
+        src: roles/bamboofw_agent/files/glibc-2.22.tar.bz2
         dest: /usr/local
         owner: root
         group: root
@@ -34,7 +52,7 @@
         state: absent
     - name: Copy rpm file
       copy:
-        src: /roles/bamboofw_agent/files/patchelf-0.12-1.el7.x86_64.rpm
+        src: roles/bamboofw_agent/files/patchelf-0.12-1.el7.x86_64.rpm
         dest: /tmp/
         owner: root
         group: root
