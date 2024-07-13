@@ -45,7 +45,7 @@
       loop:
       - "{{ manage_node }} etcd1"
       - "{{ manage_node }} etcd2"
-      - "{{ manage_node }} etcd 3"
+      - "{{ manage_node }} etcd3"
 
     - name: Download bamboofw-agent
       get_url:
