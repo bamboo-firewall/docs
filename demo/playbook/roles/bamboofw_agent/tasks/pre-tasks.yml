@@ -12,6 +12,7 @@
   when: os_major_version == '7'
 
 - name: Install GCC and pre-requiste tools and packages
+  when: os_major_version != '7'
   block:
     - name: Install developer tools
       shell: yum group install -y "Development Tools"
