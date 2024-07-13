@@ -19,6 +19,7 @@
     - name: End playbook if OS is not supported
       meta: end_play
       when: ansible_facts['distribution'] not in OS_DISTRIBUTION_VALID
+      ignore_errors: yes
 
 - name: Include some preparation tasks if distribution is not ubuntu
   import_tasks: roles/bamboofw_agent/tasks/pre-tasks.yml
