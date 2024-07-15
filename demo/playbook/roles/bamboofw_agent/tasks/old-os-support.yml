@@ -1,0 +1,121 @@
+---
+- name: Debug playbook invocation
+  debug:
+    msg: "Preparation task for old OS"
+
+- name: Adding CentosOS vault repository
+  shell: sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo && sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo
+
+- name: Install developer tool
+  shell: yum group install -y "Development Tools"
+
+- name: Install neccessary tools
+  yum:
+    name:
+    - vim
+    - wget
+    - yum-utils
+    - ipset
+    state: present
+    update_cache: yes
+
+- name: Check version of installed glibc
+  command: ldd --version
+  ignore_errors: True
+  changed_when: false
+  failed_when: false
+  register: glibc_installed_version
+
+- name: Check version of installed make
+  command: make --version
+  ignore_errors: True
+  changed_when: false
+  failed_when: false
+  register: make_installed_version
+
+- when: make_installed_version != "4.2.1"
+  block:
+  - name: Set version of make
+    set_fact:
+      make_version: "4.2.1"
+  - name: Download source
+    get_url:
+      url: "https://ftp.gnu.org/gnu/make/make-{{make_version}}.tar.gz"
+      dest: "/tmp/make-{{make_version}}.tar.gz"
+  - name: Extract archive
+    unarchive:
+      src: "/tmp/make-{{make_version}}.tar.gz"
+      dest: /tmp/
+      remote_src: True
+  - name: Configure install
+    command: ./configure --prefix=/usr/local/make-4.2.1
+    args:
+      chdir: "/tmp/make-{{make_version}}"
+      creates: "/tmp/make-{{make_version}}/config.status"
+  - name: Build make
+    command: make
+    args:
+      chdir: "/tmp/make-{{make_version}}"
+      creates: "/tmp/make-{{make_version}}/make"
+  - name: Install make
+    command: make install
+    args:
+      chdir: "/tmp/make-{{make_version}}"
+      creates: /usr/local/make-4.2.1
+  - name: Remove build directory
+    file:
+      path: "/tmp/make-{{make_version}}"
+      state: absent
+  - name: Remove archive
+    file:
+      path: "/tmp/make-{{make_version}}.tar.gz"
+      state: absent
+
+- when: glibc_installed_version != "2.22"
+  block:
+  - name: Set version of make
+    set_fact:
+      glibc_version: "2.22"
+  - name: Download version of glibc
+    get_url:
+      url: https://ftp.gnu.org/gnu/glibc/glibc-{{glibc_version}}.tar.gz
+      dest: "/tmp/glibc-{{glibc_version}}.tar.gz"
+  - name: Extract archive
+    unarchive:
+      src: "/tmp/glibc-{{glibc_version}}.tar.gz"
+      dest: /tmp/
+      remote_src: True
+  - name: Make a new directory for install
+    shell: mkdir /tmp/glibc-{{glibc_version}}/build && cd /tmp/glibc-{{glibc_version}}/build
+  - name: Configure for glibc
+    command: ../configure --prefix=/usr/local/glibc-{{glibc_version}}
+    args:
+      chdir: "/tmp/glibc-{{glibc_version}}/build"
+      creates: "/tmp/glibc-{{glibc_version}}/build/config.status"
+  - name: Build glibc
+    command: make
+    args:
+      chdir: "/tmp/glibc-{{glibc_version}}/build"
+      creates: "/tmp/glibc-{{glibc_version}}/build/glibc"
+  - name: Install glibc
+    command: make install
+    args:
+      chdir: "/tmp/glibc-{{glibc_version}}/build"
+      creates: "/usr/local/glibc-{{glibc_version}}"
+  - name: Remove directory
+    file:
+      path: "/tmp/glibc-{{glibc_version}}"
+      state: absent
+  - name: Remove archive
+    file:
+      path: "/tmp/glibc-{{glibc_version}}.tar.gz"
+      state: absent
+
+- name: Install patchelf
+  shell: wget --no-check-certificate https://rpmfind.net/linux/epel/7/x86_64/Packages/p/patchelf-0.12-1.el7.x86_64.rpm 
+
+- name: Yum install (and remove if any patchelf is preinstall)
+  shell: yum remove -y patchelf && yum localinstall -y patchelf-0.12-1.el7.x86_64.rpm
+
+- name: Remove rpm package after installation
+  shell: rm -f patchelf-0.12-1.el7.x86_64.rpm

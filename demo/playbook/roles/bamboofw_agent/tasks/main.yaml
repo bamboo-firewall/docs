@@ -1,95 +1,119 @@
 ---
-- name: Build hosts file
-  lineinfile:
-    path: /etc/hosts
-    line: '{{ ansible_ssh_host }} {{ name }}'
-    create: true
-  tags: update_hostname
+- name: Debug playbook
+  debug:
+    msg: "Perform checking to ensure OS is supported by playbook"
 
-- name: Set hostname 
-  hostname:
-    name: "{{ name }}"
+- name: OS checking and playbook decision
+  block:
+    - name: Check if OS is matching with these below
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['distribution'] in OS_DISTRIBUTION_VALID
+        fail_msg: "This playbook requiures the OS to be one of the following {{ OS_DISTRIBUTION_VALID }}"
+        success_msg: "The opearting system {{ ansible_facts['distribution'] }} is allowed"
 
-- name: Build hosts file for etcd
-  lineinfile:
-    path: /etc/hosts
-    line: '{{ item }}'
-    create: yes
-  loop:
-  - "{{ manage_node }} etcd1"
-  - "{{ manage_node }} etcd2"
-  - "{{ manage_node }} etcd3"
+    - name: Gather facts from remote machine
+      set_fact:
+        os_major_version: "{{ ansible_facts['distribution_version'].split('.')[0] }}"
 
-- name: Update cache
-  apt:
-    update_cache: true
-    upgrade: true
+    - name: End playbook if OS is not supported
+      meta: end_play
+      when: ansible_facts['distribution'] not in OS_DISTRIBUTION_VALID
+      ignore_errors: yes
 
-- name: "Install ipset"
-  apt: 
-    name: ipset
-    state: present
-    update_cache: yes
+- name: Include some preparation tasks if distribution is not ubuntu
+  import_tasks: roles/bamboofw_agent/tasks/pre-tasks.yml
+  when: ansible_facts['distribution'] != 'Ubuntu'
 
-- name: Download bamboofw-agent
-  get_url:
-    url: https://github.com/bamboo-firewall/calico/releases/download/v0.0.1/calico-felix-amd64.tar.gz
-    dest: /tmp/calico-felix-amd64.tar.gz
-    mode: '0644'
+- name: Default execution for all supported distribution
+  block:
+    - name: Build hosts file
+      lineinfile:
+        path: /etc/hosts
+        line: '{{ ansible_ssh_host }} {{ name }}'
+        create: true
+      tags: update_hostname
 
-- name: Extract felix bin file
-  unarchive:
-    src: /tmp/calico-felix-amd64.tar.gz
-    dest: /usr/local/bin/
-    owner: root
-    group: root
-    mode: 0755
-    remote_src: True
+    - name: Set hosts name
+      hostname:
+        name: "{{ name }}"
 
-- name: "Create directory for calico configuration"
-  file:
-    path: /etc/calico
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
+    - name: Build hosts file for etcd
+      lineinfile:
+        path: /etc/hosts
+        line: '{{ item }}'
+        create: yes
+      loop:
+      - "{{ manage_node }} etcd1"
+      - "{{ manage_node }} etcd2"
+      - "{{ manage_node }} etcd3"
 
-- name: "Create configuration file for calico"
-  template:
-    src: templates/felix.cfg.j2
-    dest: /etc/calico/felix.cfg
-    owner: root
-    group: root
-    mode: 0600
+    - name: Download bamboofw-agent
+      get_url:
+        url: https://github.com/bamboo-firewall/calico/releases/download/v0.0.1/calico-felix-amd64.tar.gz
+        dest: /tmp/calico-felix-amd64.tar.gz
+        mode: '0644'
 
-- name: "Create directory for calico SSL configuration"
-  file:
-    path: /etc/calico/ssl
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
+    - name: Extract felix bin file
+      unarchive:
+        src: /tmp/calico-felix-amd64.tar.gz
+        dest: /usr/local/bin/
+        owner: root
+        group: root
+        mode: 0755
+        remote_src: True
 
-- name: Copy ssl file 
-  copy:
-    content: "{{ item.file_var }}"
-    dest: "/etc/calico/ssl/{{ item.file_name }}"
-  with_items:
-    - { file_var: "{{ ca_cert }}", file_name: ca.pem }
-    - { file_var: "{{ cert }}", file_name: etcd.pem }
-    - { file_var: "{{ key }}", file_name: etcd-key.pem }  
+    - name: "Create directory for calico configuration"
+      file:
+        path: /etc/calico
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
 
-- name: "Create a calico service"
-  template:
-    src: templates/calico.service.j2
-    dest: /lib/systemd/system/calico-felix.service
-    owner: root
-    group: root
-    mode: 0644
+    - name: "Create configuration file for calico"
+      template:
+        src: templates/felix.cfg.j2
+        dest: /etc/calico/felix.cfg
+        owner: root
+        group: root
+        mode: 0600
 
-- name: "Reload calico service"
-  systemd:
-    name: calico-felix
-    state: restarted
-    daemon_reload: true
-    enabled: true
+    - name: "Create directory for calico SSL configuration"
+      file:
+        path: /etc/calico/ssl
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Copy ssl file 
+      copy:
+        content: "{{ item.file_var }}"
+        dest: "/etc/calico/ssl/{{ item.file_name }}"
+      with_items:
+        - { file_var: "{{ ca_cert }}", file_name: ca.pem }
+        - { file_var: "{{ cert }}", file_name: etcd.pem }
+        - { file_var: "{{ key }}", file_name: etcd-key.pem }  
+
+    - name: "Create a calico service"
+      template:
+        src: templates/calico.service.j2
+        dest: /lib/systemd/system/calico-felix.service
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: "Set external lib if OS is too old"
+      shell: sudo patchelf --set-interpreter /usr/local/glibc-2.22/lib/ld-linux-x86-64.so.2 --set-rpath /usr/local/glibc-2.22/lib:/usr/lib64 /usr/local/bin/calico-felix-amd64
+      when:
+      - ansible_facts['distribution'] != 'Ubuntu'
+      - os_major_version == '7'
+
+    - name: "Reload calico service"
+      systemd:
+        name: calico-felix
+        state: restarted
+        daemon_reload: true
+        enabled: true
+
