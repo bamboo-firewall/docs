@@ -27,6 +27,11 @@
 
 - name: Default execution for all supported distribution
   block:
+    - name: Install pre-requisite packages for calico-felix agent
+      ansible.builtin.package:
+        name: ipset
+        state: present
+
     - name: Build hosts file
       lineinfile:
         path: /etc/hosts

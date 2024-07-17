@@ -12,10 +12,8 @@
 - name: Install neccessary tools
   yum:
     name:
-    - vim
     - wget
     - yum-utils
-    - ipset
     state: present
     update_cache: yes
 
@@ -42,6 +40,7 @@
     get_url:
       url: "https://ftp.gnu.org/gnu/make/make-{{make_version}}.tar.gz"
       dest: "/tmp/make-{{make_version}}.tar.gz"
+      validate_certs: false
   - name: Extract archive
     unarchive:
       src: "/tmp/make-{{make_version}}.tar.gz"
@@ -80,6 +79,7 @@
     get_url:
       url: https://ftp.gnu.org/gnu/glibc/glibc-{{glibc_version}}.tar.gz
       dest: "/tmp/glibc-{{glibc_version}}.tar.gz"
+      validate_certs: false
   - name: Extract archive
     unarchive:
       src: "/tmp/glibc-{{glibc_version}}.tar.gz"
