@@ -22,8 +22,6 @@
         name:
         - wget
         - yum-utils
-        - ipset
-        - wget
         state: present
         update_cache: yes
       ignore_errors: True
