@@ -7,22 +7,32 @@ docker_compose_ver: "v2.20.2"
 # OS compatibility check
 #----------------
 OS_DISTRIBUTION_VALID:
-- "Ubuntu"
-- "CentOS"
-- "RedHat"
-UBUNTU_DISTRIBUTION_VALID:
-- "20"
-- "22"
-- "24"
-
-CENTOS_DISTRIBUTION_VALID:
-- "7"
-- "8"
-- "9"
-REDHAT_DISTRIBUTION_VALID:
-- "7"
-- "8"
-- "9"
+  - name: "Ubuntu"
+    versions:
+      - 20
+      - 22
+      - 24
+  - name: "CentOS"
+    versions:
+      - 7
+      - 8
+      - 9
+  - name: "RedHat"
+    versions:
+      - 7
+      - 8
+      - 9
+  - name: "SUSE"
+    variants:
+      - "SLED"
+      - "SLES"
+    versions:
+      - 15
+  - name: "openSUSE"
+    variants:
+      - "openSUSE Leap"
+    versions:
+      - 15
 
 #----------------
 # Image version 
