@@ -1,29 +1,43 @@
 ---
-- name: Debug playbook
-  debug:
-    msg: "Perform checking to ensure OS is supported by playbook"
-
 - name: OS checking and playbook decision
   block:
-    - name: Check if OS is matching with these below
-      ansible.builtin.assert:
-        that:
-          - ansible_facts['distribution'] in OS_DISTRIBUTION_VALID
-        fail_msg: "This playbook requiures the OS to be one of the following {{ OS_DISTRIBUTION_VALID }}"
-        success_msg: "The opearting system {{ ansible_facts['distribution'] }} is allowed"
-
-    - name: Gather facts from remote machine
+    - name: Define OS
       set_fact:
+        os_names: "{{ OS_DISTRIBUTION_VALID | map(attribute='name') | list }}"
+        os_variants: "{{ OS_DISTRIBUTION_VALID | selectattr('variants', 'defined') | map(attribute='variants') | flatten | list }}"
+        find_distribution: >-
+          {{
+            (OS_DISTRIBUTION_VALID | selectattr('name', 'equalto', ansible_facts['distribution']) | list) + 
+            (OS_DISTRIBUTION_VALID | selectattr('variants', 'defined') | selectattr('variants', 'contains', ansible_facts['distribution']) | list)
+          }}
         os_major_version: "{{ ansible_facts['distribution_version'].split('.')[0] }}"
 
-    - name: End playbook if OS is not supported
-      meta: end_play
-      when: ansible_facts['distribution'] not in OS_DISTRIBUTION_VALID
-      ignore_errors: yes
-
-- name: Include some preparation tasks if distribution is not ubuntu
-  import_tasks: roles/bamboofw_agent/tasks/pre-tasks.yml
-  when: ansible_facts['distribution'] != 'Ubuntu'
+    - name: Check if OS is supported
+      set_fact:
+        os_supported: >-
+          {% if find_distribution | length > 0 %}
+            {% set os_info = find_distribution[0] %}
+            {% if os_info.versions is not defined or os_major_version | float in os_info.versions %}
+              1
+            {% else %}
+              0
+            {% endif %}
+          {% else %}
+            -1
+          {% endif %}
+          
+    - name: Assert OS is supported
+      assert:
+        that: os_supported|int== 1
+        fail_msg: >-
+          {% if  os_supported|int == 0 %}
+            The current version {{ ansible_facts['distribution_version'] }} is not supported for {{ ansible_facts['distribution'] }}.
+            Supported versions for {{ ansible_facts['distribution'] }} are: {{ find_distribution[0].versions }}.
+          {% else %}
+            Current operating system {{ ansible_facts['distribution'] }} is not supported.
+            This playbook requires the OS to be one of the following {{ os_names + os_variants }}.
+          {% endif %}
+        success_msg: "The operating system {{ ansible_facts['distribution'] }} version {{ ansible_facts['distribution_version'] }} is allowed."
 
 - name: Default execution for all supported distribution
   block:
@@ -39,9 +53,10 @@
         create: true
       tags: update_hostname
 
-    - name: Set hosts name
-      hostname:
-        name: "{{ name }}"
+    - name: Set hostname
+      shell: hostnamectl set-hostname '{{ name }}'
+      args:
+        warn: false
 
     - name: Build hosts file for etcd
       lineinfile:
@@ -101,13 +116,24 @@
         - { file_var: "{{ cert }}", file_name: etcd.pem }
         - { file_var: "{{ key }}", file_name: etcd-key.pem }  
 
-    - name: "Create a calico service"
-      template:
-        src: templates/calico.service.j2
-        dest: /lib/systemd/system/calico-felix.service
-        owner: root
-        group: root
-        mode: 0644
+    - name: "Ensure systemd directory exists and create a calico service"
+      block:
+        - name: Check if systemd directory exists
+          stat:
+            path: /lib/systemd/system
+          register: systemd_dir
+
+        - name: Ensure systemd directory is present
+          command: mkdir -p /lib/systemd/system
+          when: not systemd_dir.stat.exists
+
+        - name: Create a calico service
+          template:
+            src: templates/calico.service.j2
+            dest: /lib/systemd/system/calico-felix.service
+            owner: root
+            group: root
+            mode: 0644
 
     - name: "Set external lib if OS is too old"
       shell: sudo patchelf --set-interpreter /usr/local/glibc-2.22/lib/ld-linux-x86-64.so.2 --set-rpath /usr/local/glibc-2.22/lib:/usr/lib64 /usr/local/bin/calico-felix-amd64
@@ -121,4 +147,3 @@
         state: restarted
         daemon_reload: true
         enabled: true
-

@@ -74,6 +74,20 @@ informed of the latest Bamboo Firewall updates:
     <td>Verified</td>
   </tr>
   <tr>
+    <td rowspan="2">SUSE</td>
+    <td>SLES 15</td>
+    <td>Verified</td>
+  </tr>
+  <tr>
+    <td>SLED 15</td>
+    <td>Verified</td>
+  </tr>
+  <tr>
+    <td rowspan="1">openSUSE</td>
+    <td>openSUSE Leap 15</td>
+    <td>Verified</td>
+  </tr>
+  <tr>
     <td rowspan="3">Debian</td>
     <td>Debian 8</td>
     <td>Under checking</td>
