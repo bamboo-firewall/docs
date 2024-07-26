@@ -388,6 +388,151 @@ Repository of the Ansible playbook to install bamboo firewall on Rocky linux for
 ![ipsetgrep](./imgs/bamboofirewall/ipset-grep.png)
 ![ipset detail](./imgs/bamboofirewall/ipset-detail.png)
 
+## Test mix environment between old and new calico
+
+Release for new calico felix which is bamboo-firewall/calico merged with projectcalico/calico: [pngocthach/calico](https://github.com/pngocthach/calico/releases/tag/v0.0.2)
+
+### Test environment 1: 3 servers
+
+- calicoctl: v3.22.1
+
+```sh
+root@d0a6362e1f17:/bamboofw# calicoctl version
+Client Version:    v3.22.1
+Git commit:        82e7ce520
+Cluster Version:   unknown
+Cluster Type:      unknown
+```
+
+- manage-aio/lb01: v3.22.2-1-g6b085ff66917
+
+```sh
+# manage-aio
+[INFO][26305] felix/usagerep.go 205: Reporting cluster usage/checking for deprecation warnings. alpEnabled=false calicoVersion="unknown" clusterGUID="0e0cb3bf0b444e508a540ecb83b35049" clusterType="unknown" gitRevision="6b085ff66917f05b5de5bcbece97c22724e18405" kubernetesVersion="unknown" stats=calc.StatsUpdate{NumHosts:3, NumWorkloadEndpoints:0, NumHostEndpoints:3, NumPolicies:3, NumProfiles:1, NumALPPolicies:0} version="v3.22.2-1-g6b085ff66917"
+
+# lb01
+[INFO][3944] felix/usagerep.go 205: Reporting cluster usage/checking for deprecation warnings. alpEnabled=false calicoVersion="unknown" clusterGUID="0e0cb3bf0b444e508a540ecb83b35049" clusterType="unknown" gitRevision="6b085ff66917f05b5de5bcbece97c22724e18405" kubernetesVersion="unknown" stats=calc.StatsUpdate{NumHosts:3, NumWorkloadEndpoints:0, NumHostEndpoints:3, NumPolicies:3, NumProfiles:1, NumALPPolicies:0} version="v3.22.2-1-g6b085ff66917"
+```
+
+- app01:
+  - before: v3.22.2-1-g6b085ff66917
+  - after: v3.28.0-93-gb745a727971a
+
+```sh
+gitcommit="6b085ff66917f05b5de5bcbece97c22724e18405" version="v3.22.2-1-g6b085ff66917"
+```
+```sh
+[INFO][27868] felix/usagerep.go 205: Reporting cluster usage/checking for deprecation warnings. alpEnabled=false calicoVersion="unknown" clusterGUID="0e0cb3bf0b444e508a540ecb83b35049" clusterType="unknown" gitRevision="b745a727971a66cb9f6277090f462db93ebe2388" kubernetesVersion="unknown" stats=calc.StatsUpdate{NumHosts:3, NumWorkloadEndpoints:0, NumHostEndpoints:3, NumPolicies:3, NumProfiles:1, NumALPPolicies:0} version="v3.28.0-93-gb745a727971a"
+```
+
+### GNP
+
+Allow load balancer access to app
+
+```yaml
+---
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: app-allow-ingress-lb
+spec:
+  selector: ((role == 'app') && (project == 'example'))
+  ingress:
+    - action: Allow
+      protocol: TCP
+      source:
+        selector: ((role == 'lb') && (project == 'example'))
+      destination:
+        ports: [80, 443]
+```
+
+### Before and after update comparison
+
+- Before:
+
+```sh
+# iptables
+[lab@app01 ~]$ sudo iptables -L | grep http
+MARK       tcp  --  anywhere             anywhere             /* cali:C4N_hjw0Fkz9DgxN */ /* Policy default.app-allow-ingress-lb ingress */ match-set cali40s:NXoRGGB97QqUxA5rp5_5Zu0 src multiport dports http,https MARK or 0x10000
+
+# ipset
+[lab@app01 ~]$ sudo ipset list | grep cali40s:NXoRGGB97QqUxA5rp5_5Zu0 -A 10
+Name: cali40s:NXoRGGB97QqUxA5rp5_5Zu0
+Type: hash:net
+Revision: 7
+Header: family inet hashsize 1024 maxelem 1048576 bucketsize 12 initval 0x5c351cfe
+Size in memory: 520
+References: 1
+Number of entries: 1
+Members:
+172.16.194.131
+```
+
+- After:
+
+```sh
+# iptables
+[lab@app01 ~]$ sudo iptables -L | grep http
+MARK       tcp  --  anywhere             anywhere             /* cali:C4N_hjw0Fkz9DgxN */ /* Policy default.app-allow-ingress-lb ingress */ match-set cali40s:NXoRGGB97QqUxA5rp5_5Zu0 src multiport dports http,https MARK or 0x10000
+
+# ipset
+Name: cali40s:NXoRGGB97QqUxA5rp5_5Zu0
+Type: hash:net
+Revision: 7
+Header: family inet hashsize 1024 maxelem 1048576 bucketsize 12 initval 0x5c351cfe
+Size in memory: 520
+References: 1
+Number of entries: 1
+Members:
+172.16.194.131
+```
+
+### Conclusion
+
+- Mix environment work normally
+
+- Pocicy details remain the same between update
+
+### Test environment 2: 3 servers
+
+- calicoctl: v3.22.1
+
+```sh
+root@302fa410b472:/bamboofw# calicoctl version
+Client Version:    v3.28.0
+Git commit:        413e6f559
+Cluster Version:   unknown
+Cluster Type:      unknown
+```
+
+- manage-aio/lb01: v3.22.2-1-g6b085ff66917
+
+```sh
+# manage-aio
+[INFO][26305] felix/usagerep.go 205: Reporting cluster usage/checking for deprecation warnings. alpEnabled=false calicoVersion="unknown" clusterGUID="0e0cb3bf0b444e508a540ecb83b35049" clusterType="unknown" gitRevision="6b085ff66917f05b5de5bcbece97c22724e18405" kubernetesVersion="unknown" stats=calc.StatsUpdate{NumHosts:3, NumWorkloadEndpoints:0, NumHostEndpoints:3, NumPolicies:3, NumProfiles:1, NumALPPolicies:0} version="v3.22.2-1-g6b085ff66917"
+
+# lb01
+[INFO][3944] felix/usagerep.go 205: Reporting cluster usage/checking for deprecation warnings. alpEnabled=false calicoVersion="unknown" clusterGUID="0e0cb3bf0b444e508a540ecb83b35049" clusterType="unknown" gitRevision="6b085ff66917f05b5de5bcbece97c22724e18405" kubernetesVersion="unknown" stats=calc.StatsUpdate{NumHosts:3, NumWorkloadEndpoints:0, NumHostEndpoints:3, NumPolicies:3, NumProfiles:1, NumALPPolicies:0} version="v3.22.2-1-g6b085ff66917"
+```
+
+- app01:
+  - before: v3.22.2-1-g6b085ff66917
+  - after: v3.28.0-93-gb745a727971a
+
+```sh
+gitcommit="6b085ff66917f05b5de5bcbece97c22724e18405" version="v3.22.2-1-g6b085ff66917"
+```
+
+```sh
+[INFO][27868] felix/usagerep.go 205: Reporting cluster usage/checking for deprecation warnings. alpEnabled=false calicoVersion="unknown" clusterGUID="0e0cb3bf0b444e508a540ecb83b35049" clusterType="unknown" gitRevision="b745a727971a66cb9f6277090f462db93ebe2388" kubernetesVersion="unknown" stats=calc.StatsUpdate{NumHosts:3, NumWorkloadEndpoints:0, NumHostEndpoints:3, NumPolicies:3, NumProfiles:1, NumALPPolicies:0} version="v3.28.0-93-gb745a727971a"
+```
+
+### Conclusion
+
+- Mix environment work normally
+
+- Pocicy details remain the same between update
+
 # Resouces used
 
 <p align="center">
