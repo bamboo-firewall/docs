@@ -74,17 +74,25 @@ informed of the latest Bamboo Firewall updates:
     <td>Verified</td>
   </tr>
   <tr>
-    <td rowspan="3">Debian</td>
+    <td rowspan="5">Debian</td>
     <td>Debian 8</td>
-    <td>Under checking</td>
+    <td>Incompatible</td>
   </tr>
   <tr>
     <td>Debian 9</td>
-    <td>Under checking</td>
+    <td>Incompatible</td>
   </tr>
   <tr>
     <td>Debian 10</td>
-    <td>Under checking</td>
+    <td>Verified</td>
+  </tr>
+    <tr>
+    <td>Debian 11</td>
+    <td>Verified</td>
+  </tr>
+    <tr>
+    <td>Debian 12</td>
+    <td>Verified</td>
   </tr>
   <tr>
     <td rowspan="2">FreeBSD</td>
