@@ -29,11 +29,9 @@ participant Agent as Agent
 participant DB as Database
 Agent ->> Agent: interval check rule local
 Agent ->> Agent: change rule(delete/append)
-Agent ->> APIS: call API save new rule
-APIS ->> APIS: gen hash
-APIS ->> DB: save rule + rule hashed to database
+Agent ->> APIS: call API get current rule
 APIS ->> Agent: response rule + rule hashed
-Agent ->> Agent: save rule hashed + rule in local
+Agent ->> Agent: save rule hashed + apply rule in local
 ``````
 
 # API-Server --> Agent
