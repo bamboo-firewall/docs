@@ -1,73 +1,128 @@
-# Agent --> API-Server
+# Flow Apply rules
+
+## Agent --> API-Server
+
+### Apply rule from User
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant APIS as API Server
+    participant DB as Database
+    U ->> APIS: Apply rules
+    APIS ->> APIS: Gen uuid
+    APIS ->> DB: Save rules and uuid to database
+    APIS ->> U: Response
+```
+
+### Call interval from Agent to API-Server
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant APIS as API Server
+    participant DB as Database
+    participant Agent as Agent
+    participant DP as DataPlane
+    Agent ->> APIS: Interval check rules change by uuid of agent_id
+    APIS ->> DB: Get by uuid of agent
+    APIS ->> APIS: If get by uuid not found. Get all rules of agent_id
+    APIS ->> Agent: Response all rules if uuid not match
+    Agent ->> Agent: Save rule and uuid to mem cache
+    Agent ->> DP: Get rules
+    Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
+    Agent ->> Agent: Check rule is create, change or delete
+    Agent ->> DP: apply rules if rule is create, change or delete
+```
+
+### Interval check change rule from DataPlane in Agent
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Agent as Agent
+    participant DP as DataPlane
+    Agent ->> DP: Get rules
+    Agent ->> Agent: interval check rule local
+    Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
+    Agent ->> Agent: Check rule is change or delete
+    Agent ->> DP: apply rules if rule is change or delete
+```
+
+## API-Server <---> Agent
 
 ### Flow apply rule from API server
 
-``````mermaid
+```mermaid
 sequenceDiagram
-autonumber
-actor U as User
-participant APIS as API Server
-participant Agent as Agent
-participant DB as Database
-U ->> APIS: apply rules
-APIS ->> APIS: gen hash for each rule
-APIS ->> DB: save rules and hashes to database
-APIS ->> U: Response
-Agent ->> APIS: call interval check rule has been hashed
-APIS ->> APIS: compare hashed rule request with hash in db
-APIS ->> Agent: response rule + hash if there are changes
-Agent ->> Agent: appy new rule and save hash from response
-``````
+    autonumber
+    actor U as User
+    participant APIS as API Server
+    participant DB as Database
+    participant Agent as Agent
+    participant DP as DataPlane
+    U ->> APIS: apply rules
+    APIS ->> DB: save rules to database
+    APIS ->> Agent: Apply rules to Agent
+    Agent ->> Agent: Save rule and gen hash rule to mem cache
+    Agent ->> APIS: response
+    APIS ->> U: response
+    Agent ->> Agent: check rule is append, replace or delete
+    Agent ->> DP: apply rule
+```
 
-### Flow change rule from Agent
+### Interval check change rule from DataPlane in Agent
 
-``````mermaid
+```mermaid
 sequenceDiagram
-autonumber
-participant APIS as API Server
-participant Agent as Agent
-participant DB as Database
-Agent ->> Agent: interval check rule local
-Agent ->> Agent: change rule(delete/append)
-Agent ->> APIS: call API get current rule
-APIS ->> Agent: response rule + rule hashed
-Agent ->> Agent: save rule hashed + apply rule in local
-``````
+    autonumber
+    participant Agent as Agent
+    participant DP as DataPlane
+    Agent ->> DP: Get rules
+    Agent ->> Agent: interval check rule local
+    Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
+    Agent ->> Agent: Check rule is change or delete
+    Agent ->> DP: apply rules if rule is change or delete
+```
 
-# API-Server --> Agent
+## APIS <---> Agent(keep connection)
 
 ### Flow apply rule from API server
 
-``````mermaid
+```mermaid
 sequenceDiagram
-autonumber
-actor U as User
-participant APIS as API Server
-participant DB as Database
-participant Agent as Agent
-U ->> APIS: apply rule
-APIS ->> DB: save rule to database
-APIS ->> Agent: Apply rule to Agent
-Agent ->> Agent: Save rule and gen hash rule to mem cache
-Agent ->> APIS: response
-APIS ->> U: response
-Agent ->> Agent: check rule is append, replace or delete
-Agent ->> Agent: apply rule
-``````
+    autonumber
+    actor U as User
+    participant APIS as API Server
+    participant DB as Database
+    participant Agent as Agent
+    participant DP as DataPlane
+    U ->> APIS: apply rules
+    APIS ->> DB: save rules to database
+    APIS ->> Agent: Send event to agent
+    Agent ->> Agent: Save rule and gen hash rule to mem cache
+    Agent ->> APIS: response
+    APIS ->> U: response
+    Agent ->> Agent: check rule is append, replace or delete
+    Agent ->> DP: apply rule
+```
 
-### Flow change rule of IPTable from Agent(not allow change)
+### Interval check change rule from DataPlane in Agent
 
-``````mermaid
+```mermaid
 sequenceDiagram
-autonumber
-participant Agent as Agent
-participant IPTable as IPTable
-Agent ->> IPTable: interval read rule and hash rule
-Agent ->> Agent: Check hash rule with current hash rule in mem cache
-Agent ->> IPTable: if not match, apply current rule
-``````
+    autonumber
+    participant Agent as Agent
+    participant DP as DataPlane
+    Agent ->> DP: Get rules
+    Agent ->> Agent: interval check rule local
+    Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
+    Agent ->> Agent: Check rule is change or delete
+    Agent ->> DP: apply rules if rule is change or delete
+```
 
 ## hash rule
-```go
-sha224(currentRule) -> hash
+```
+sha224(rule) -> hash
 ```
