@@ -9,9 +9,9 @@ actor U as User
 participant APIS as API Server
 participant Agent as Agent
 participant DB as Database
-U ->> APIS: apply rule
-APIS ->> APIS: gen hash
-APIS ->> DB: save rule and hash to database
+U ->> APIS: apply rules
+APIS ->> APIS: gen hash for each rule
+APIS ->> DB: save rules and hashes to database
 APIS ->> U: Response
 Agent ->> APIS: call interval check rule has been hashed
 APIS ->> APIS: compare hashed rule request with hash in db
@@ -43,23 +43,31 @@ sequenceDiagram
 autonumber
 actor U as User
 participant APIS as API Server
-participant Agent as Agent
 participant DB as Database
+participant Agent as Agent
 U ->> APIS: apply rule
-APIS ->> APIS: gen hash
-APIS ->> DB: save rule and hash to database
+APIS ->> DB: save rule to database
 APIS ->> Agent: Apply rule to Agent
-Agent ->> Agent: Save rule to file and apply
+Agent ->> Agent: Save rule and gen hash rule to mem cache
 Agent ->> APIS: response
 APIS ->> U: response
+Agent ->> Agent: check rule is append, replace or delete
+Agent ->> Agent: apply rule
 ``````
 
-### Flow change rule from Agent
+### Flow change rule of IPTable from Agent(not allow change)
 
 ``````mermaid
 sequenceDiagram
 autonumber
 participant Agent as Agent
-Agent ->> Agent: read file and interval check rule local
-Agent ->> Agent: if change, apply rule current in file
+participant IPTable as IPTable
+Agent ->> IPTable: interval read rule and hash rule
+Agent ->> Agent: Check hash rule with current hash rule in mem cache
+Agent ->> IPTable: if not match, apply current rule
 ``````
+
+## hash rule
+```go
+sha224(currentRule) -> hash
+```
