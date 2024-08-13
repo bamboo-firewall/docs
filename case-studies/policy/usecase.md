@@ -33,7 +33,7 @@ sequenceDiagram
     Agent ->> DP: Get rules
     Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
     Agent ->> Agent: Check rule is create, change or delete
-    Agent ->> DP: apply rules if rule is create, change or delete
+    Agent ->> DP: Apply rules if rule is create, change or delete
 ```
 
 ### Interval check change rule from DataPlane in Agent
@@ -43,11 +43,10 @@ sequenceDiagram
     autonumber
     participant Agent as Agent
     participant DP as DataPlane
-    Agent ->> DP: Get rules
-    Agent ->> Agent: interval check rule local
+    Agent ->> DP: Interval get rules
     Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
     Agent ->> Agent: Check rule is change or delete
-    Agent ->> DP: apply rules if rule is change or delete
+    Agent ->> DP: Apply rules if rule is change or delete
 ```
 
 ## API-Server <---> Agent
@@ -79,11 +78,10 @@ sequenceDiagram
     autonumber
     participant Agent as Agent
     participant DP as DataPlane
-    Agent ->> DP: Get rules
-    Agent ->> Agent: interval check rule local
+    Agent ->> DP: Interval get rules
     Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
     Agent ->> Agent: Check rule is change or delete
-    Agent ->> DP: apply rules if rule is change or delete
+    Agent ->> DP: Apply rules if rule is change or delete
 ```
 
 ## APIS <---> Agent(keep connection)
@@ -115,14 +113,19 @@ sequenceDiagram
     autonumber
     participant Agent as Agent
     participant DP as DataPlane
-    Agent ->> DP: Get rules
-    Agent ->> Agent: interval check rule local
+    Agent ->> DP: Interval get rules
     Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
     Agent ->> Agent: Check rule is change or delete
-    Agent ->> DP: apply rules if rule is change or delete
+    Agent ->> DP: Apply rules if rule is change or delete
 ```
 
 ## hash rule
 ```
 sha224(rule) -> hash
 ```
+
+## DataPlane
+### ipset
+### iptables
+### nftables
+### ebpf
