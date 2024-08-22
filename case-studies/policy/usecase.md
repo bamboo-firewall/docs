@@ -42,10 +42,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    participant APIS as API Server
-    participant DB as Database
     participant Agent as Agent
     participant DP as DataPlane
+    participant APIS as API Server
+    participant DB as Database
     Agent ->> APIS: Call interval to check policy changes by uuid and version of agent
     APIS ->> DB: Get current version policy of agent
     APIS ->> Agent: Response all rules of policy if version not match
