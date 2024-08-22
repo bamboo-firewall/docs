@@ -1,21 +1,3 @@
-# About Bamboo-policy
-## What is Bamboo-policy
-**Bamboo-policy** is a networking and security solution that enables **ATAO-Cloud** workloads and non-ATAO-Cloud
-
-## Components and features
-
-### Components
-| Component               | Description                              | Main feature                                                                                                                                |
-|-------------------------|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| bamboo-api-server(zeus) | Contain policy for DataPlain to execute. | Handle request from User or bambooctl.<br/>Connect to DataStore.<br>Handle logic policy to allow/deny traffic within a node, between nodes. |
-| bamboo-cni(hercules)    | Apply policy to DataPlain                | Connect to DataPlains: eBPF, standard Linux iptables(iptables, nftables), ipset.<br>Apply policy to DataPlains.                             |
-
-### Feature summary
-| Feature         | Description                                              |
-|-----------------|----------------------------------------------------------|
-| DataPlanes      | eBPF, standard Linux iptables(iptables, nftables), ipset |
-| User interfaces | bamboctl                                                 |
-
 # Flow with policy
 
 ## Create from User
@@ -91,7 +73,7 @@ sequenceDiagram
 sha224(rule) -> hash
 ```
 
-## Input Host Endpoint
+## Input Host Endpoint(json or yaml)
 - represents one or more real or virtual interfaces attached to a host that is running bamboo-policy
 
 ```json
@@ -151,7 +133,7 @@ Definition
 | protocol    | TRUE      | `TCP`, `UDP`, `SCTP` | String  | The protocol of this named port |               |
 | port        | TRUE      | `1` - `65535`        | integer | The workload port number        |               |
 
-## Input policy
+## Input policy(json or yaml)
 
 - represents an ordered set of rules which are applied to a collection of endpoint
 
