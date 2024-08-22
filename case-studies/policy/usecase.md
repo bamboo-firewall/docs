@@ -1,181 +1,131 @@
-# Flow Apply rules
+# Flow with policy
 
-## Agent --> API-Server
-
-### Apply rule from User
-
+## Create from User
 ```mermaid
 sequenceDiagram
     autonumber
     actor U as User
     participant APIS as API Server
     participant DB as Database
-    U ->> APIS: Apply rules
-    APIS ->> APIS: Gen uuid
-    APIS ->> DB: Save rules and uuid to database
+    U ->> APIS: Create policy
+    APIS ->> APIS: Gen uuid and version
+    APIS ->> DB: Save policy with uuid and version
+    APIS ->> U: Response
+```
+
+## Edit from User
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant APIS as API Server
+    participant DB as Database
+    U ->> APIS: Edit policy
+    APIS ->> APIS: Create new version
+    APIS ->> DB: Save new version
+    APIS ->> U: Response
+```
+
+## Delete from User
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant APIS as API Server
+    participant DB as Database
+    U ->> APIS: Delete policy
+    APIS ->> DB: Delete policy
     APIS ->> U: Response
 ```
 
 ### Call interval from Agent to API-Server
-
 ```mermaid
 sequenceDiagram
     autonumber
-    participant APIS as API Server
-    participant DB as Database
     participant Agent as Agent
     participant DP as DataPlane
-    Agent ->> APIS: Interval check rules change by uuid of agent_id
-    APIS ->> DB: Get by uuid of agent
-    APIS ->> APIS: If get by uuid not found. Get all rules of agent_id
-    APIS ->> Agent: Response all rules if uuid not match
-    Agent ->> Agent: Save rule and uuid to mem cache
+    participant APIS as API Server
+    participant DB as Database
+    Agent ->> APIS: Call interval to check policy changes by uuid and version of agent
+    APIS ->> DB: Get current version policy of agent
+    APIS ->> Agent: Response all rules of policy if version not match
+    Agent ->> Agent: Save rules, uuid, version of policy to mem cache
     Agent ->> DP: Get rules
     Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
-    Agent ->> Agent: Check rule is create, change or delete
-    Agent ->> DP: Apply rules if rule is create, change or delete
+    Agent ->> Agent: Check rules is create, change or delete
+    Agent ->> DP: Apply rules if rules is create, change or delete
 ```
 
-### Interval check change rule from DataPlane in Agent
-
+### Interval check rules changes from DataPlane in Agent
 ```mermaid
 sequenceDiagram
     autonumber
     participant Agent as Agent
     participant DP as DataPlane
-    Agent ->> DP: Interval get rules
+    Agent ->> DP: Get interval rules of policy
     Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
-    Agent ->> Agent: Check rule is change or delete
-    Agent ->> DP: Apply rules if rule is change or delete
-```
-
-## API-Server <---> Agent
-
-### Flow apply rule from API server
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor U as User
-    participant APIS as API Server
-    participant DB as Database
-    participant Agent as Agent
-    participant DP as DataPlane
-    U ->> APIS: apply rules
-    APIS ->> DB: save rules to database
-    APIS ->> Agent: Apply rules to Agent
-    Agent ->> Agent: Save rule and gen hash rule to mem cache
-    Agent ->> APIS: response
-    APIS ->> U: response
-    Agent ->> Agent: check rule is append, replace or delete
-    Agent ->> DP: apply rule
-```
-
-### Interval check change rule from DataPlane in Agent
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant Agent as Agent
-    participant DP as DataPlane
-    Agent ->> DP: Interval get rules
-    Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
-    Agent ->> Agent: Check rule is change or delete
-    Agent ->> DP: Apply rules if rule is change or delete
-```
-
-### Flow agent start or restart
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant APIS as API Server
-    participant DB as Database
-    participant Agent as Agent
-    participant DP as DataPlane
-    Agent ->> APIS: Get rules
-    APIS ->> DB: Get rules
-    APIS ->> Agent: Response
-    Agent ->> Agent: Save rule and gen hash rule to mem cache
-    Agent ->> Agent: check rule is append, replace or delete
-    Agent ->> DP: apply rule
-```
-
-## APIS <---> Agent(keep connection)
-
-### Flow apply rule from API server
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor U as User
-    participant APIS as API Server
-    participant DB as Database
-    participant Agent as Agent
-    participant DP as DataPlane
-    U ->> APIS: apply rules
-    APIS ->> DB: save rules to database
-    APIS ->> Agent: Send event to agent
-    Agent ->> Agent: Save rule and gen hash rule to mem cache
-    Agent ->> APIS: response
-    APIS ->> U: response
-    Agent ->> Agent: check rule is append, replace or delete
-    Agent ->> DP: apply rule
-```
-
-### Interval check change rule from DataPlane in Agent
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant Agent as Agent
-    participant DP as DataPlane
-    Agent ->> DP: Interval get rules
-    Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
-    Agent ->> Agent: Check rule is change or delete
-    Agent ->> DP: Apply rules if rule is change or delete
+    Agent ->> Agent: Check rules is change or delete
+    Agent ->> DP: Apply current rules from APIS if rules is change or delete
 ```
 
 ## hash rule
-```
+```text
 sha224(rule) -> hash
 ```
 
-## DataPlane
-### ipset
-### iptables
-### nftables
-### ebpf
+## Input Host Endpoint(json or yaml)
+- represents one or more real or virtual interfaces attached to a host that is running bamboo-policy
 
-## Input Host Endpoint
-- represents one or more real or virtual interfaces attached to a host that is running atao-policy
 ```json
 {
-  "host_name": "",
-  "interface_name": "",
-  "ips": [""],
-  "ports": [
-    {
-      "name": "",
-      "port": 0,
-      "protocol": ""
+  "metadata": {
+    "name": "",
+    "labels": {
+      "key": ""
     }
-  ],
+  },
+  "spec": {
+    "interface_name": "",
+    "ips": [
+      ""
+    ],
+    "ports": [
+      {
+        "name": "",
+        "port": 0,
+        "protocol": ""
+      }
+    ]
+  },
   "description": ""
 }
 ```
 
 Definition
 
+| Field       | Mandatory | Accepted Values | Schema                             | Description                           | Default value |
+|-------------|-----------|-----------------|------------------------------------|---------------------------------------|---------------|
+| metadata    | TRUE      |                 | [Metadata](#hostendpoint-metadata) | Metadata of host endpoint             |               |
+| spec        | TRUE      |                 | [Spec](#hostendpoint-spec)         | Specific information of host endpoint |               |
+| description | FALSE     |                 | string                             | Description                           |               |
+
+<a id="hostendpoint-metadata">**Metadata**</a>
+
+| Field  | Mandatory | Accepted Values | Schema               | Description                                               | Default value |
+|--------|-----------|-----------------|----------------------|-----------------------------------------------------------|---------------|
+| name   | TRUE      |                 | string               | name of host endpoint                                     |               |
+| labels | TRUE      |                 | map[string]interface | used to validate the policy assigned to the host endpoint |               |
+
+<a id="hostendpoint-spec">**Spec**</a>
+
 | Field          | Mandatory | Accepted Values | Schema        | Description                                                 | Default value |
 |----------------|-----------|-----------------|---------------|-------------------------------------------------------------|---------------|
-| host_name      | TRUE      |                 | string        | Name of host                                                |               |
 | interface_name | TRUE      |                 | string        | The name of the specific interface on which to apply policy |               |
-| ips            | TRUE      |                 | array string  | ips                                                         |               |
+| ips            | TRUE      |                 | array string  | list ips of host endpoint                                   |               |
 | ports          | TRUE      |                 | [Port](#port) | List of named ports that this workload exposes              |               |
 | description    | FALSE     |                 | string        | Description                                                 |               |
 
-<a id="port">Port</a>
+<a id="port">**Port**</a>
 
 | Field       | Mandatory | Accepted Values      | Schema  | Description                     | Default value |
 |-------------|-----------|----------------------|---------|---------------------------------|---------------|
@@ -183,15 +133,17 @@ Definition
 | protocol    | TRUE      | `TCP`, `UDP`, `SCTP` | String  | The protocol of this named port |               |
 | port        | TRUE      | `1` - `65535`        | integer | The workload port number        |               |
 
-## Input policy
+## Input policy(json or yaml)
 
 - represents an ordered set of rules which are applied to a collection of endpoint
 
 ```json
 {
-  "policy_name": "",
-  "project_id": 0,
-  "tenant_id": 0,
+  "metadata": {
+    "name": "",
+    "project_id": 0,
+    "tenant_id": 0
+  },
   "description": "",
   "spec": {
     "selector": "",
@@ -228,45 +180,50 @@ Definition
 
 Definition
 
+| Field       | Mandatory | Accepted Values | Schema                       | Description                    | Default value |
+|-------------|-----------|-----------------|------------------------------|--------------------------------|---------------|
+| metadata    | TRUE      |                 | [Metadata](#policy-metadata) | Metadata of policy             |               |
+| spec        | TRUE      |                 | [Spec](#policy-spec)         | Specific information of policy |               |
+| description | FALSE     |                 | string                       | Description                    |               |
+
+<a id="policy-metadata">**Metadata**</a>
+
 | Field       | Mandatory | Accepted Values | Schema  | Description    | Default value |
 |-------------|-----------|-----------------|---------|----------------|---------------|
 | policy_name | TRUE      |                 | string  | Name of policy |               |
 | project_id  | FALSE     |                 | integer | Project ID     |               |
 | tenant_id   | FALSE     |                 | integer | Tenant ID      |               |
-| description | FALSE     |                 | string  | Description    |               |
 
-Spec
+<a id="policy-spec">**Spec**</a>
 
-| Field    | Mandatory | Accepted Values     | Schema       | Description                                              | Default value |
-|----------|-----------|---------------------|--------------|----------------------------------------------------------|---------------|
-| selector | TRUE      |                     | string       | Selects the endpoint to which this policy applies        | all()         |
-| types    | TRUE      | `Ingress`, `Egress` | array string | Applies the policy based on the direction of the traffic |               |
-| ingress  | FALSE     |                     | Rule         | Ordered list of ingress rules applied by policy          |               |
-| egress   | FALSE     |                     | Rule         | Ordered list of egress rules applied by policy           |               |
+| Field    | Mandatory | Accepted Values     | Schema        | Description                                              | Default value |
+|----------|-----------|---------------------|---------------|----------------------------------------------------------|---------------|
+| selector | TRUE      |                     | string        | Selects the endpoint to which this policy applies        | all()         |
+| types    | TRUE      | `Ingress`, `Egress` | array string  | Applies the policy based on the direction of the traffic |               |
+| ingress  | FALSE     |                     | [Rule](#rule) | Ordered list of ingress rules applied by policy          |               |
+| egress   | FALSE     |                     | [Rule](#rule) | Ordered list of egress rules applied by policy           |               |
 
-Rule
+<a id="rule">**Rule**</a>
 
-| Field       | Mandatory | Accepted Values                | Schema               | Description                               | Default value |
-|-------------|-----------|--------------------------------|----------------------|-------------------------------------------|---------------|
-| metadata    | FALSE     |                                | map of string string |                                           |               |
-| action      | TRUE      | `Allow`, `Deny`, `Log`, `Pass` | string               | Action to perform when matching this rule |               |
-| protocol    | TRUE      | `TCP`, `UDP`, `SCTP`, `ICMP`   | string               | positive protocol match                   |               |
-| source      | FALSE     |                                | EntityRule           | Source match parameter                    |               |
-| destination | FALSE     |                                | EntityRule           | Destination match parameter               |               |
+| Field       | Mandatory | Accepted Values                | Schema                     | Description                               | Default value |
+|-------------|-----------|--------------------------------|----------------------------|-------------------------------------------|---------------|
+| metadata    | FALSE     |                                | map[string]interface       |                                           |               |
+| action      | TRUE      | `Allow`, `Deny`, `Log`, `Pass` | string                     | Action to perform when matching this rule |               |
+| protocol    | TRUE      | `TCP`, `UDP`, `SCTP`, `ICMP`   | string                     | positive protocol match                   |               |
+| source      | FALSE     |                                | [EntityRule](#entity_rule) | Source match parameter                    |               |
+| destination | FALSE     |                                | [EntityRule](#entity_rule) | Destination match parameter               |               |
 
-EntityRule
+<a id="entity_rule">**EntityRule**</a>
 
-| Field | Mandatory | Accepted Values | Schema        | Description                                    | Default value |
-|-------|-----------|-----------------|---------------|------------------------------------------------|---------------|
-| nets  | FALSE     |                 | list of CIDRs | Match packets with IP in any of the list CIDRs |               |
-| ports | FALSE     |                 | string        | Positive match on the specified ports          |               |
+| Field | Mandatory | Accepted Values | Schema        | Description                                     | Default value |
+|-------|-----------|-----------------|---------------|-------------------------------------------------|---------------|
+| nets  | FALSE     |                 | list of CIDRs | Match packets with IP in any of the list CIDRs  |               |
+| ports | FALSE     |                 | string        | Positive match on the specified [ports](#ports) |               |
 
-
-Ports
+<a id="ports">**Ports**</a>
 
 | Syntax    | Example    | Description                                                         |
 |-----------|------------|---------------------------------------------------------------------|
 | int       | 80         | The exact (numeric) port specified                                  |
 | start:end | 1001:1010  | All numeric ports within the range start <= x <= end                |
 | string    | named-port | A named port, as defined in the ports list of one or mores endpoint |
-
