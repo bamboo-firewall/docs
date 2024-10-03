@@ -73,6 +73,12 @@ sequenceDiagram
 sha224(rule) -> hash
 ```
 
+## API
+### Input(json)
+
+## CLI
+### Input(json or yaml)
+
 ## Input Host Endpoint(json or yaml)
 - represents one or more real or virtual interfaces attached to a host that is running bamboo-policy
 
@@ -80,25 +86,27 @@ sha224(rule) -> hash
 {
   "metadata": {
     "name": "",
-    "labels": {
-      "key": ""
-    }
+    "labels": {}
   },
   "spec": {
-    "interface_name": "",
+    "interfaceName": "",
     "ips": [
       ""
-    ],
-    "ports": [
-      {
-        "name": "",
-        "port": 0,
-        "protocol": ""
-      }
     ]
   },
   "description": ""
 }
+```
+
+```yaml
+metadata:
+  name: ''
+  labels: {}
+spec:
+  interfaceName: ''
+  ips:
+  - ''
+description: ''
 ```
 
 Definition
@@ -118,22 +126,62 @@ Definition
 
 <a id="hostendpoint-spec">**Spec**</a>
 
-| Field          | Mandatory | Accepted Values | Schema        | Description                                                 | Default value |
-|----------------|-----------|-----------------|---------------|-------------------------------------------------------------|---------------|
-| interface_name | TRUE      |                 | string        | The name of the specific interface on which to apply policy |               |
-| ips            | TRUE      |                 | array string  | list ips of host endpoint                                   |               |
-| ports          | TRUE      |                 | [Port](#port) | List of named ports that this workload exposes              |               |
-| description    | FALSE     |                 | string        | Description                                                 |               |
+| Field         | Mandatory | Accepted Values | Schema        | Description                                                 | Default value |
+|---------------|-----------|-----------------|---------------|-------------------------------------------------------------|---------------|
+| interfaceName | TRUE      |                 | string        | The name of the specific interface on which to apply policy |               |
+| ips           | TRUE      |                 | array string  | list ips of host endpoint                                   |               |
 
-<a id="port">**Port**</a>
+## Input Global Network Set(json or yaml)
 
-| Field       | Mandatory | Accepted Values      | Schema  | Description                     | Default value |
-|-------------|-----------|----------------------|---------|---------------------------------|---------------|
-| name        | TRUE      |                      | string  | The name attach to this port    |               |
-| protocol    | TRUE      | `TCP`, `UDP`, `SCTP` | String  | The protocol of this named port |               |
-| port        | TRUE      | `1` - `65535`        | integer | The workload port number        |               |
+- represents an arbitrary set of IP subnetworks/CIDRs, allowing it to be matched by rule in Global network Policy
 
-## Input policy(json or yaml)
+```json
+{
+  "metadata": {
+    "name": "",
+    "labels": {}
+  },
+  "spec": {
+    "nets": [
+      ""
+    ]
+  },
+  "description": ""
+}
+```
+
+```yaml
+metadata:
+  name: ''
+  labels: {}
+spec:
+  nets:
+  - ''
+description: ''
+```
+
+Definition
+
+| Field       | Mandatory | Accepted Values | Schema                                 | Description                                | Default value |
+|-------------|-----------|-----------------|----------------------------------------|--------------------------------------------|---------------|
+| metadata    | TRUE      |                 | [Metadata](#globalNetworkSet-metadata) | Metadata of global network set             |               |
+| spec        | TRUE      |                 | [Spec](#globalNetworkSet-spec)         | Specific information of global network set |               |
+| description | FALSE     |                 | string                                 | Description                                |               |
+
+<a id="globalNetworkSet-metadata">**Metadata**</a>
+
+| Field  | Mandatory | Accepted Values | Schema               | Description                                                            | Default value |
+|--------|-----------|-----------------|----------------------|------------------------------------------------------------------------|---------------|
+| name   | TRUE      |                 | string               | name of set                                                            |               |
+| labels | TRUE      |                 | map[string]interface | used to validate the rule of policy assigned to the global network set |               |
+
+<a id="globalNetworkSet-spec">**Spec**</a>
+
+| Field | Mandatory | Accepted Values | Schema       | Description      | Default value |
+|-------|-----------|-----------------|--------------|------------------|---------------|
+| nets  | TRUE      |                 | array string | list ips or cidr |               |
+
+## Input Global Network policy(json or yaml)
 
 - represents an ordered set of rules which are applied to a collection of endpoint
 
@@ -141,41 +189,108 @@ Definition
 {
   "metadata": {
     "name": "",
-    "project_id": 0,
-    "tenant_id": 0
+    "labels": {}
   },
   "description": "",
   "spec": {
     "selector": "",
-    "types": [""],
     "ingress": {
       "metadata": {},
       "action": "",
       "protocol": "",
+      "notProtocol": "",
+      "ipVersion": 0,
       "source": {
+        "selector": "",
         "nets": [""],
-        "ports": []
+        "notNets": [""],
+        "ports": [],
+        "notPorts": []
       },
       "destination": {
+        "selector": "",
         "nets": [""],
-        "ports": []
+        "notNets": [""],
+        "ports": [],
+        "notPorts": []
       }
     },
     "egress": {
       "metadata": {},
       "action": "",
       "protocol": "",
+      "notProtocol": "",
+      "ipVersion": 0,
       "source": {
+        "selector": "",
         "nets": [""],
-        "ports": []
+        "notNets": [""],
+        "ports": [],
+        "notPorts": []
       },
       "destination": {
+        "selector": "",
         "nets": [""],
-        "ports": []
+        "notNets": [""],
+        "ports": [],
+        "notPorts": []
       }
     }
   }
 }
+```
+
+```yaml
+metadata:
+  name: ''
+  labels: {}
+description: ''
+spec:
+  selector: ''
+  ingress:
+    metadata: {}
+    action: ''
+    protocol: ''
+    notProtocol: ''
+    ipVersion: 0
+    source:
+      selector: ''
+      nets:
+      - ''
+      notNets:
+      - ''
+      ports: []
+      notPorts: []
+    destination:
+      selector: ''
+      nets:
+      - ''
+      notNets:
+      - ''
+      ports: []
+      notPorts: []
+  egress:
+    metadata: {}
+    action: ''
+    protocol: ''
+    notProtocol: ''
+    ipVersion: 0
+    source:
+      selector: ''
+      nets:
+      - ''
+      notNets:
+      - ''
+      ports: []
+      notPorts: []
+    destination:
+      selector: ''
+      nets:
+      - ''
+      notNets:
+      - ''
+      ports: []
+      notPorts: []
 ```
 
 Definition
@@ -188,37 +303,40 @@ Definition
 
 <a id="policy-metadata">**Metadata**</a>
 
-| Field       | Mandatory | Accepted Values | Schema  | Description    | Default value |
-|-------------|-----------|-----------------|---------|----------------|---------------|
-| policy_name | TRUE      |                 | string  | Name of policy |               |
-| project_id  | FALSE     |                 | integer | Project ID     |               |
-| tenant_id   | FALSE     |                 | integer | Tenant ID      |               |
+| Field  | Mandatory | Accepted Values | Schema               | Description      | Default value |
+|--------|-----------|-----------------|----------------------|------------------|---------------|
+| name   | TRUE      |                 | string               | Name of policy   |               |
+| labels | TRUE      |                 | map[string]interface | label for policy |               |
 
 <a id="policy-spec">**Spec**</a>
 
-| Field    | Mandatory | Accepted Values     | Schema        | Description                                              | Default value |
-|----------|-----------|---------------------|---------------|----------------------------------------------------------|---------------|
-| selector | TRUE      |                     | string        | Selects the endpoint to which this policy applies        | all()         |
-| types    | TRUE      | `Ingress`, `Egress` | array string  | Applies the policy based on the direction of the traffic |               |
-| ingress  | FALSE     |                     | [Rule](#rule) | Ordered list of ingress rules applied by policy          |               |
-| egress   | FALSE     |                     | [Rule](#rule) | Ordered list of egress rules applied by policy           |               |
+| Field    | Mandatory | Accepted Values | Schema        | Description                                       | Default value |
+|----------|-----------|-----------------|---------------|---------------------------------------------------|---------------|
+| selector | FALSE     |                 | string        | Selects the endpoint to which this policy applies |               |
+| ingress  | FALSE     |                 | [Rule](#rule) | Ordered list of ingress rules applied by policy   |               |
+| egress   | FALSE     |                 | [Rule](#rule) | Ordered list of egress rules applied by policy    |               |
 
 <a id="rule">**Rule**</a>
 
-| Field       | Mandatory | Accepted Values                | Schema                     | Description                               | Default value |
-|-------------|-----------|--------------------------------|----------------------------|-------------------------------------------|---------------|
-| metadata    | FALSE     |                                | map[string]interface       |                                           |               |
-| action      | TRUE      | `Allow`, `Deny`, `Log`, `Pass` | string                     | Action to perform when matching this rule |               |
-| protocol    | TRUE      | `TCP`, `UDP`, `SCTP`, `ICMP`   | string                     | positive protocol match                   |               |
-| source      | FALSE     |                                | [EntityRule](#entity_rule) | Source match parameter                    |               |
-| destination | FALSE     |                                | [EntityRule](#entity_rule) | Destination match parameter               |               |
+| Field       | Mandatory | Accepted Values                | Schema                     | Description                                          | Default value |
+|-------------|-----------|--------------------------------|----------------------------|------------------------------------------------------|---------------|
+| metadata    | FALSE     |                                | map[string]interface       |                                                      |               |
+| action      | TRUE      | `Allow`, `Deny`, `Log`, `Pass` | string                     | Action to perform when matching this rule            |               |
+| protocol    | FALSE     | `TCP`, `UDP`, `SCTP`, `ICMP`   | string                     | positive protocol match(cannot use with notProtocol) |               |
+| notProtocol | FALSE     | `TCP`, `UDP`, `SCTP`, `ICMP`   | string                     | negative protocol match(cannot use with protocol)    |               |
+| ipVersion   | TRUE      | `4`, `6`                       | number                     | ip version                                           |               |
+| source      | FALSE     |                                | [EntityRule](#entity_rule) | Source match parameter                               |               |
+| destination | FALSE     |                                | [EntityRule](#entity_rule) | Destination match parameter                          |               |
 
 <a id="entity_rule">**EntityRule**</a>
 
-| Field | Mandatory | Accepted Values | Schema        | Description                                     | Default value |
-|-------|-----------|-----------------|---------------|-------------------------------------------------|---------------|
-| nets  | FALSE     |                 | list of CIDRs | Match packets with IP in any of the list CIDRs  |               |
-| ports | FALSE     |                 | string        | Positive match on the specified [ports](#ports) |               |
+| Field    | Mandatory | Accepted Values | Schema        | Description                                                                      | Default value |
+|----------|-----------|-----------------|---------------|----------------------------------------------------------------------------------|---------------|
+| selector | FALSE     |                 | string        | Selects the host endpoint, global network set to which this rule                 |               |
+| nets     | FALSE     |                 | list of CIDRs | Match packets with positive IP in any of the list CIDRs(cannot use with notNets) |               |
+| notNets  | FALSE     |                 | list of CIDRs | Match packets with negative IP in any of the list CIDRs(cannot use with nets)    |               |
+| ports    | FALSE     |                 | string        | Positive match on the specified(cannot use with notPorts) [ports](#ports)        |               |
+| notPorts | FALSE     |                 | string        | Negative match on the specified(cannot use with ports) [ports](#ports)           |               |
 
 <a id="ports">**Ports**</a>
 
@@ -226,4 +344,3 @@ Definition
 |-----------|------------|---------------------------------------------------------------------|
 | int       | 80         | The exact (numeric) port specified                                  |
 | start:end | 1001:1010  | All numeric ports within the range start <= x <= end                |
-| string    | named-port | A named port, as defined in the ports list of one or mores endpoint |
