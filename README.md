@@ -95,6 +95,15 @@ informed of the latest Bamboo Firewall updates:
     <td>Verified</td>
   </tr>
   <tr>
+    <td rowspan="2">Rocky Linux</td>
+    <td>Rocky Linux 8</td>
+    <td>Verified</td>
+  </tr>
+  <tr>
+    <td>Rocky Linux 9</td>
+    <td>Verified</td>
+  </tr>
+  <tr>
     <td rowspan="2">FreeBSD</td>
     <td>FreeBSD 12.x</td>
     <td>Under checking</td>
