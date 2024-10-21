@@ -28,7 +28,7 @@ https://docs.docker.com/engine/install/
 
 #### After install run command
 ```shell
-# 1. Download files in docker folder
+# 1. Download files and binary file in docker folder
 
 # 2. After download, run command
 docker compose up -d
