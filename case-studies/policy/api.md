@@ -3,8 +3,11 @@
 API for gathering bamboo firewall information:
 
 * Host End Point
+  * represents one or more real or virtual interfaces attached to a host that is running bamboo-policy
 * Global Network Set
+  * represents an arbitrary set of IP subnetworks/CIDRs, allowing it to be matched by rule in Global network Policy
 * Global Network Policy (Policy)
+  * represents an ordered set of rules which are applied to a collection of endpoint
 
 ## Input format
 - [input](./usecase.md#api)
