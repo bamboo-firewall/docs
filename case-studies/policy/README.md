@@ -28,9 +28,11 @@ https://docs.docker.com/engine/install/
 
 #### After install run command
 ```shell
-# 1. Download files and binary file in docker folder
+# 1. Download api-server source code
+https://github.com/bamboo-firewall/be/tree/v2
 
 # 2. After download, run command
+cd be/docker
 docker compose up -d
 ```
 
@@ -38,7 +40,7 @@ docker compose up -d
 ```shell
 # 1. Download bamboo-apiserver binary file with your specific distribution in bin folder
 
-# 2. Setup env
+# 2. Setup environment or .evn file
 # host of api-server
 HTTP_SERVER_HOST=0.0.0.0
 # port of api-server
@@ -56,7 +58,7 @@ DB_URI=""
 # logging
 LOGGING=false
 
-# 3. Run binary file
+# 3. Run binary file(if has .env file run with --config-file=.env)
 ```
 
 ### Create resource
@@ -81,7 +83,7 @@ sudo apy-get install ipset
 ```shell
 # 1. Download bamboo-agent binary file with your specific distribution in bin folder
 
-# 2. Setup env
+# 2. Setup environment or .env file
 # api-server address
 API_SERVER_ADDRESS="http://localhost:8080"
 # ip address of api-server
@@ -95,5 +97,5 @@ DATASTORE_REFRESH_INTERVAL="5s"
 # time interval to refresh rule from dataplane(linux)
 DATAPLANE_REFRESH_INTERVAL="5s"
 
-# 3. Run binary file
+# 3. Run binary file(if has .env file run with --config-file=.env)
 ```
