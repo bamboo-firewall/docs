@@ -15,21 +15,21 @@ https://bienkma.github.io
 ## Components and features
 
 ### Components
-| Component               | Description                              | Main feature                                                                                                                                |
-|-------------------------|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| bamboo-api-server(zeus) | Contain policy for DataPlain to execute. | Handle request from User or bambooctl.<br/>Connect to DataStore.<br>Handle logic policy to allow/deny traffic within a node, between nodes. |
-| bamboo-cni(hercules)    | Apply policy to DataPlain                | Connect to DataPlains: eBPF, standard Linux iptables(iptables, nftables), ipset.<br>Apply policy to DataPlains.                             |
+| Component                     | Description                              | Main feature                                                                                                                                |
+|-------------------------------|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| bamboo-api-server(api-server) | Contain policy for DataPlain to execute. | Handle request from User or bambooctl.<br/>Connect to DataStore.<br>Handle logic policy to allow/deny traffic within a node, between nodes. |
+| bamboo-cni(agent)             | Apply policy to DataPlain                | Connect to DataPlains: eBPF, standard Linux iptables(iptables, nftables), ipset.<br>Apply policy to DataPlains.                             |
 
 ### Feature summary
 | Feature         | Description                                              |
 |-----------------|----------------------------------------------------------|
 | DataPlanes      | eBPF, standard Linux iptables(iptables, nftables), ipset |
-| User interfaces | bamboctl                                                 |
+| User interfaces | BAMBOO Firewall CLI                                      |
 
-## API-Server(Zeus)
+## API-Server(api-server)
 Handle request from administrator. Run between the datastore and instance of bamboo-cni. Classify policies for each host endpoints.
 
-## Bamboo-cni(Hercules)
+## Bamboo-cni(agent)
 Programs routes and ACLs on the host to provide desired connectivity for the endpoints on that host. Run on each machine that hosts endpoints. Run as an agent daemon
 
 - **ACL programming**<br>
@@ -38,5 +38,5 @@ Programs routes and ACLs on the host to provide desired connectivity for the end
 ## Data Store
 **MongoDB** persistent data from administrator
 
-## bamboctl
+## BAMBOO Firewall CLI
 Command line interface to create, read, update and delete objects.

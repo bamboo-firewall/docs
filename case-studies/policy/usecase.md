@@ -310,11 +310,11 @@ Definition
 
 <a id="policy-spec">**Spec**</a>
 
-| Field    | Mandatory | Accepted Values | Schema        | Description                                       | Default value |
-|----------|-----------|-----------------|---------------|---------------------------------------------------|---------------|
-| selector | FALSE     |                 | string        | Selects the endpoint to which this policy applies |               |
-| ingress  | FALSE     |                 | [Rule](#rule) | Ordered list of ingress rules applied by policy   |               |
-| egress   | FALSE     |                 | [Rule](#rule) | Ordered list of egress rules applied by policy    |               |
+| Field    | Mandatory | Accepted Values | Schema                | Description                                       | Default value |
+|----------|-----------|-----------------|-----------------------|---------------------------------------------------|---------------|
+| selector | FALSE     |                 | [Selector](#selector) | Selects the endpoint to which this policy applies |               |
+| ingress  | FALSE     |                 | [Rule](#rule)         | Ordered list of ingress rules applied by policy   |               |
+| egress   | FALSE     |                 | [Rule](#rule)         | Ordered list of egress rules applied by policy    |               |
 
 <a id="rule">**Rule**</a>
 
@@ -330,13 +330,13 @@ Definition
 
 <a id="entity_rule">**EntityRule**</a>
 
-| Field    | Mandatory | Accepted Values | Schema        | Description                                                                      | Default value |
-|----------|-----------|-----------------|---------------|----------------------------------------------------------------------------------|---------------|
-| selector | FALSE     |                 | string        | Selects the host endpoint, global network set to which this rule                 |               |
-| nets     | FALSE     |                 | list of CIDRs | Match packets with positive IP in any of the list CIDRs(cannot use with notNets) |               |
-| notNets  | FALSE     |                 | list of CIDRs | Match packets with negative IP in any of the list CIDRs(cannot use with nets)    |               |
-| ports    | FALSE     |                 | string        | Positive match on the specified(cannot use with notPorts) [ports](#ports)        |               |
-| notPorts | FALSE     |                 | string        | Negative match on the specified(cannot use with ports) [ports](#ports)           |               |
+| Field    | Mandatory | Accepted Values | Schema                | Description                                                                      | Default value |
+|----------|-----------|-----------------|-----------------------|----------------------------------------------------------------------------------|---------------|
+| selector | FALSE     |                 | [Selector](#selector) | Selects the host endpoint, global network set to which this rule                 |               |
+| nets     | FALSE     |                 | list of CIDRs         | Match packets with positive IP in any of the list CIDRs(cannot use with notNets) |               |
+| notNets  | FALSE     |                 | list of CIDRs         | Match packets with negative IP in any of the list CIDRs(cannot use with nets)    |               |
+| ports    | FALSE     |                 | string                | Positive match on the specified(cannot use with notPorts) [ports](#ports)        |               |
+| notPorts | FALSE     |                 | string                | Negative match on the specified(cannot use with ports) [ports](#ports)           |               |
 
 <a id="ports">**Ports**</a>
 
@@ -344,3 +344,32 @@ Definition
 |-----------|------------|---------------------------------------------------------------------|
 | int       | 80         | The exact (numeric) port specified                                  |
 | start:end | 1001:1010  | All numeric ports within the range start <= x <= end                |
+
+<a id="selector">**Selector**</a>
+
+- A label selector is an expression which either matches or does not match a resource based on its labels.
+
+| Expression                           | Description                                                                                                                                                                                          |
+|--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Logical operators                    |
+| `( <expression> )`                   | Matches if and only if `<expression>` matches. (Parentheses are used for grouping expressions.)                                                                                                      |
+| `! <expression>`                     | Matches if and only if `<expression>` does not match. Tip: ! is a special character at the start of a YAML string, if you need to use ! at the start of a YAML string, enclose the string in quotes. |
+| `<expression 1> && <expression 2>`   | "And": matches if and only if both `<expression 1>`, and, `<expression 2>` matches                                                                                                                   |
+| `<expression 1> \|\| <expression 2>` | "Or": matches if and only if either `<expression 1>`, or, `<expression 2>` matches.                                                                                                                  |
+| Match operators                      |                                                                                                                                                                                                      |
+| `k == 'v'`                           | Matches resources with the label 'k' and value 'v'.                                                                                                                                                  |
+| `k != 'v'`                           | Matches resources without label 'k' or with label 'k' and value not equal to v                                                                                                                       |
+| `has(k)`                             | Matches resources with label 'k', independent of value. To match pods that do not have label k, combine this operator with ! to form !has(k)                                                         |
+| `k in { 'v1', 'v2' }`                | Matches resources with label 'k' and value in the given set                                                                                                                                          |
+| `k not in { 'v1', 'v2' }`            | Matches resources without label 'k' or with label 'k' and value not in the given set                                                                                                                 |
+| `k contains 's'`                     | Matches resources with label 'k' and value containing the substring 's'                                                                                                                              |
+| `k starts with 's'`                  | Matches resources with label 'k' and value starting with the substring 's'                                                                                                                           |
+| `k ends with 's'`                    | Matches resources with label 'k' and value ending with the substring 's'                                                                                                                             |
+
+Operators have the following precedence:
+
+- Highest: all the match operators
+- Parentheses ( ... )
+- Negation with !
+- Conjunction with &&
+- Lowest: Disjunction with ||
