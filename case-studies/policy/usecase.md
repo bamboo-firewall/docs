@@ -90,6 +90,8 @@ sha224(rule) -> hash
   },
   "spec": {
     "interfaceName": "",
+    "tenantID": 0,
+    "ip": "",
     "ips": [
       ""
     ]
@@ -104,6 +106,8 @@ metadata:
   labels: {}
 spec:
   interfaceName: ''
+  tenantID: 0
+  ip: ''
   ips:
   - ''
 description: ''
@@ -121,15 +125,19 @@ Definition
 
 | Field  | Mandatory | Accepted Values | Schema               | Description                                               | Default value |
 |--------|-----------|-----------------|----------------------|-----------------------------------------------------------|---------------|
-| name   | TRUE      |                 | string               | name of host endpoint                                     |               |
+| name   | FALSE     |                 | string               | name of host endpoint                                     |               |
 | labels | TRUE      |                 | map[string]interface | used to validate the policy assigned to the host endpoint |               |
 
 <a id="hostendpoint-spec">**Spec**</a>
 
-| Field         | Mandatory | Accepted Values | Schema        | Description                                                 | Default value |
-|---------------|-----------|-----------------|---------------|-------------------------------------------------------------|---------------|
-| interfaceName | TRUE      |                 | string        | The name of the specific interface on which to apply policy |               |
-| ips           | TRUE      |                 | array string  | list ips of host endpoint                                   |               |
+| Field         | Mandatory | Accepted Values | Schema       | Description                                                     | Default value |
+|---------------|-----------|-----------------|--------------|-----------------------------------------------------------------|---------------|
+| interfaceName | FALSE     |                 | string       | The name of the specific interface on which to apply policy     |               |
+| tenantID      | FALSE     |                 | number       | the organization to which it belongs(> 0)                       | 1             |
+| ip            | FALSE     |                 | string       | ip of host endpoint(if empty, get one of ips)                   |               |
+| ips           | TRUE      |                 | array string | list ips of host endpoint(currently must has at least one ipv4) |               |
+
+### Note: tenantID and ip will be a unique pair to identify the host endpoint
 
 ## Input Global Network Set(json or yaml)
 
@@ -172,7 +180,7 @@ Definition
 
 | Field  | Mandatory | Accepted Values | Schema               | Description                                                            | Default value |
 |--------|-----------|-----------------|----------------------|------------------------------------------------------------------------|---------------|
-| name   | TRUE      |                 | string               | name of set                                                            |               |
+| name   | TRUE      |                 | string               | name of set(must be unique)                                            |               |
 | labels | TRUE      |                 | map[string]interface | used to validate the rule of policy assigned to the global network set |               |
 
 <a id="globalNetworkSet-spec">**Spec**</a>
@@ -194,48 +202,53 @@ Definition
   "description": "",
   "spec": {
     "selector": "",
-    "ingress": {
-      "metadata": {},
-      "action": "",
-      "protocol": "",
-      "notProtocol": "",
-      "ipVersion": 0,
-      "source": {
-        "selector": "",
-        "nets": [""],
-        "notNets": [""],
-        "ports": [],
-        "notPorts": []
-      },
-      "destination": {
-        "selector": "",
-        "nets": [""],
-        "notNets": [""],
-        "ports": [],
-        "notPorts": []
+    "order": 0,
+    "ingress": [
+      {
+        "metadata": {},
+        "action": "",
+        "protocol": "",
+        "notProtocol": "",
+        "ipVersion": 0,
+        "source": {
+          "selector": "",
+          "nets": [""],
+          "notNets": [""],
+          "ports": [],
+          "notPorts": []
+        },
+        "destination": {
+          "selector": "",
+          "nets": [""],
+          "notNets": [""],
+          "ports": [],
+          "notPorts": []
+        }
       }
-    },
-    "egress": {
-      "metadata": {},
-      "action": "",
-      "protocol": "",
-      "notProtocol": "",
-      "ipVersion": 0,
-      "source": {
-        "selector": "",
-        "nets": [""],
-        "notNets": [""],
-        "ports": [],
-        "notPorts": []
-      },
-      "destination": {
-        "selector": "",
-        "nets": [""],
-        "notNets": [""],
-        "ports": [],
-        "notPorts": []
+    ],
+    "egress": [
+      {
+        "metadata": {},
+        "action": "",
+        "protocol": "",
+        "notProtocol": "",
+        "ipVersion": 0,
+        "source": {
+          "selector": "",
+          "nets": [""],
+          "notNets": [""],
+          "ports": [],
+          "notPorts": []
+        },
+        "destination": {
+          "selector": "",
+          "nets": [""],
+          "notNets": [""],
+          "ports": [],
+          "notPorts": []
+        }
       }
-    }
+    ]
   }
 }
 ```
@@ -247,50 +260,51 @@ metadata:
 description: ''
 spec:
   selector: ''
+  order: 0
   ingress:
-    metadata: {}
-    action: ''
-    protocol: ''
-    notProtocol: ''
-    ipVersion: 0
-    source:
-      selector: ''
-      nets:
-      - ''
-      notNets:
-      - ''
-      ports: []
-      notPorts: []
-    destination:
-      selector: ''
-      nets:
-      - ''
-      notNets:
-      - ''
-      ports: []
-      notPorts: []
+    - metadata: {}
+      action: ''
+      protocol: ''
+      notProtocol: ''
+      ipVersion: 0
+      source:
+        selector: ''
+        nets:
+        - ''
+        notNets:
+        - ''
+        ports: []
+        notPorts: []
+      destination:
+        selector: ''
+        nets:
+        - ''
+        notNets:
+        - ''
+        ports: []
+        notPorts: []
   egress:
-    metadata: {}
-    action: ''
-    protocol: ''
-    notProtocol: ''
-    ipVersion: 0
-    source:
-      selector: ''
-      nets:
-      - ''
-      notNets:
-      - ''
-      ports: []
-      notPorts: []
-    destination:
-      selector: ''
-      nets:
-      - ''
-      notNets:
-      - ''
-      ports: []
-      notPorts: []
+    - metadata: {}
+      action: ''
+      protocol: ''
+      notProtocol: ''
+      ipVersion: 0
+      source:
+        selector: ''
+        nets:
+          - ''
+        notNets:
+          - ''
+        ports: []
+        notPorts: []
+      destination:
+        selector: ''
+        nets:
+          - ''
+        notNets:
+          - ''
+        ports: []
+        notPorts: []
 ```
 
 Definition
@@ -303,30 +317,31 @@ Definition
 
 <a id="policy-metadata">**Metadata**</a>
 
-| Field  | Mandatory | Accepted Values | Schema               | Description      | Default value |
-|--------|-----------|-----------------|----------------------|------------------|---------------|
-| name   | TRUE      |                 | string               | Name of policy   |               |
-| labels | TRUE      |                 | map[string]interface | label for policy |               |
+| Field  | Mandatory | Accepted Values | Schema               | Description                    | Default value |
+|--------|-----------|-----------------|----------------------|--------------------------------|---------------|
+| name   | TRUE      |                 | string               | Name of policy(must be unique) |               |
+| labels | TRUE      |                 | map[string]interface | label for policy               |               |
 
 <a id="policy-spec">**Spec**</a>
 
-| Field    | Mandatory | Accepted Values | Schema                | Description                                       | Default value |
-|----------|-----------|-----------------|-----------------------|---------------------------------------------------|---------------|
-| selector | FALSE     |                 | [Selector](#selector) | Selects the endpoint to which this policy applies |               |
-| ingress  | FALSE     |                 | [Rule](#rule)         | Ordered list of ingress rules applied by policy   |               |
-| egress   | FALSE     |                 | [Rule](#rule)         | Ordered list of egress rules applied by policy    |               |
+| Field    | Mandatory | Accepted Values | Schema                | Description                                                                                  | Default value |
+|----------|-----------|-----------------|-----------------------|----------------------------------------------------------------------------------------------|---------------|
+| selector | FALSE     |                 | [Selector](#selector) | Selects the endpoint to which this policy applies                                            |               |
+| order    | FALSE     |                 | number                | Controls the order of the precedence. The smaller the number, the higher the order.[0->2^32) | 2^32 - 1      |
+| ingress  | FALSE     |                 | List of [Rule](#rule) | Ordered list of ingress rules applied by policy                                              |               |
+| egress   | FALSE     |                 | List of [Rule](#rule) | Ordered list of egress rules applied by policy                                               |               |
 
 <a id="rule">**Rule**</a>
 
-| Field       | Mandatory | Accepted Values                | Schema                     | Description                                          | Default value |
-|-------------|-----------|--------------------------------|----------------------------|------------------------------------------------------|---------------|
-| metadata    | FALSE     |                                | map[string]interface       |                                                      |               |
-| action      | TRUE      | `Allow`, `Deny`, `Log`, `Pass` | string                     | Action to perform when matching this rule            |               |
-| protocol    | FALSE     | `TCP`, `UDP`, `SCTP`, `ICMP`   | string                     | positive protocol match(cannot use with notProtocol) |               |
-| notProtocol | FALSE     | `TCP`, `UDP`, `SCTP`, `ICMP`   | string                     | negative protocol match(cannot use with protocol)    |               |
-| ipVersion   | TRUE      | `4`, `6`                       | number                     | ip version                                           |               |
-| source      | FALSE     |                                | [EntityRule](#entity_rule) | Source match parameter                               |               |
-| destination | FALSE     |                                | [EntityRule](#entity_rule) | Destination match parameter                          |               |
+| Field       | Mandatory | Accepted Values                                    | Schema                     | Description                                          | Default value |
+|-------------|-----------|----------------------------------------------------|----------------------------|------------------------------------------------------|---------------|
+| metadata    | FALSE     |                                                    | map[string]interface       |                                                      |               |
+| action      | TRUE      | `Allow`, `Deny`, `Log`, `Pass`                     | string                     | Action to perform when matching this rule            |               |
+| protocol    | FALSE     | `TCP`, `UDP`, `SCTP`, `ICMP`, `UDPLite`, `1`-`255` | string \| number           | positive protocol match(cannot use with notProtocol) |               |
+| notProtocol | FALSE     | `TCP`, `UDP`, `SCTP`, `ICMP`, `UDPLite`, `1`-`255` | string \|  number          | negative protocol match(cannot use with protocol)    |               |
+| ipVersion   | TRUE      | `4`, `6`                                           | number                     | ip version                                           |               |
+| source      | FALSE     |                                                    | [EntityRule](#entity_rule) | Source match parameter                               |               |
+| destination | FALSE     |                                                    | [EntityRule](#entity_rule) | Destination match parameter                          |               |
 
 <a id="entity_rule">**EntityRule**</a>
 
@@ -357,6 +372,7 @@ Definition
 | `<expression 1> && <expression 2>`   | "And": matches if and only if both `<expression 1>`, and, `<expression 2>` matches                                                                                                                   |
 | `<expression 1> \|\| <expression 2>` | "Or": matches if and only if either `<expression 1>`, or, `<expression 2>` matches.                                                                                                                  |
 | Match operators                      |                                                                                                                                                                                                      |
+| `all()`                              | Match all in-scope resources. To match no resources, combine this operator with ! to form !all()                                                                                                     |
 | `k == 'v'`                           | Matches resources with the label 'k' and value 'v'.                                                                                                                                                  |
 | `k != 'v'`                           | Matches resources without label 'k' or with label 'k' and value not equal to v                                                                                                                       |
 | `has(k)`                             | Matches resources with label 'k', independent of value. To match pods that do not have label k, combine this operator with ! to form !has(k)                                                         |

@@ -76,7 +76,7 @@ LOGGING=false
 ```shell
 sudo apt-get update
 sudo apt-get install iptables
-sudo apy-get install ipset
+sudo apt-get install ipset
 ```
 
 ### Run binary file
@@ -85,17 +85,23 @@ sudo apy-get install ipset
 
 # 2. Setup environment or .env file
 # api-server address
-API_SERVER_ADDRESS="http://localhost:8080"
+API_SERVER_ADDRESS="address of api-server"
 # ip address of api-server
-API_SERVER_IPV4="127.0.0.1"
+API_SERVER_IPV4="ipv4 of api-server"
+# The organization to which it belongs
+TENANT_ID=1
+# ip address of host
+HOST_IPV4="ipv4 of host"
+# enable ipv6
+IPV6_SUPPORT=false
 # lock timeout when using iptables
 IPTABLES_LOCK_SECONDS_TIMEOUT=3
-# name of host endpoint
-HOST_NAME="my_host"
 # time interval to refresh rule from api-server
 DATASTORE_REFRESH_INTERVAL="5s"
 # time interval to refresh rule from dataplane(linux)
 DATAPLANE_REFRESH_INTERVAL="5s"
+# enable debug
+DEBUG=true
 
 # 3. Run binary file(if has .env file run with --config-file=.env)
 ```

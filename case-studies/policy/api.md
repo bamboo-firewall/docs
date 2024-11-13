@@ -31,6 +31,8 @@ curl --location 'http://localhost:8080/api/v1/hostEndpoints' \
   },
   "spec": {
     "interfaceName": "",
+    "tenantID": 0,
+    "ip": "",
     "ips": [
       ""
     ]
@@ -39,9 +41,14 @@ curl --location 'http://localhost:8080/api/v1/hostEndpoints' \
 }'
 ```
 
+#### List
+```curl
+curl --location 'http://localhost:8080/api/v1/hostEndpoints?tenantID=&ip='
+```
+
 #### Get
 ```curl
-curl --location 'http://localhost:8080/api/v1/hostEndpoints/byName/:hostName'
+curl --location 'http://localhost:8080/api/v1/hostEndpoints/byTenantID/:tenantID/byIP/:ip'
 ```
 
 #### Delete
@@ -49,8 +56,10 @@ curl --location 'http://localhost:8080/api/v1/hostEndpoints/byName/:hostName'
 curl --location --request DELETE 'http://localhost:8080/api/v1/hostEndpoints' \
 --header 'Content-Type: application/json' \
 --data '{
-  "metadata": {
-    "name": ""
+  "spec": {
+    "tenantID": 0,
+    "ip": "",
+    "ips: [""],
   },
 }'
 ```
@@ -72,6 +81,11 @@ curl --location 'http://localhost:8080/api/v1/globalNetworkSets' \
   },
   "description": ""
 }'
+```
+
+#### List
+```curl
+curl --location 'http://localhost:8080/api/v1/globalNetworkSets'
 ```
 
 #### Get
@@ -103,50 +117,60 @@ curl --location 'http://localhost:8080/api/v1/globalNetworkPolicies' \
   "description": "",
   "spec": {
     "selector": "",
-    "ingress": {
-      "metadata": {},
-      "action": "",
-      "protocol": "",
-      "notProtocol": "",
-      "ipVersion": 0,
-      "source": {
-        "selector": "",
-        "nets": [""],
-        "notNets": [""],
-        "ports": [],
-        "notPorts": []
-      },
-      "destination": {
-        "selector": "",
-        "nets": [""],
-        "notNets": [""],
-        "ports": [],
-        "notPorts": []
+    "order": 1,
+    "ingress": [
+      {
+        "metadata": {},
+        "action": "",
+        "protocol": "",
+        "notProtocol": "",
+        "ipVersion": 0,
+        "source": {
+          "selector": "",
+          "nets": [""],
+          "notNets": [""],
+          "ports": [],
+          "notPorts": []
+        },
+        "destination": {
+          "selector": "",
+          "nets": [""],
+          "notNets": [""],
+          "ports": [],
+          "notPorts": []
+        }
       }
-    },
-    "egress": {
-      "metadata": {},
-      "action": "",
-      "protocol": "",
-      "notProtocol": "",
-      "ipVersion": 0,
-      "source": {
-        "selector": "",
-        "nets": [""],
-        "notNets": [""],
-        "ports": [],
-        "notPorts": []
-      },
-      "destination": {
-        "selector": "",
-        "nets": [""],
-        "notNets": [""],
-        "ports": [],
-        "notPorts": []
+    ],
+    "egress": [
+      {
+        "metadata": {},
+        "action": "",
+        "protocol": "",
+        "notProtocol": "",
+        "ipVersion": 0,
+        "source": {
+          "selector": "",
+          "nets": [""],
+          "notNets": [""],
+          "ports": [],
+          "notPorts": []
+        },
+        "destination": {
+          "selector": "",
+          "nets": [""],
+          "notNets": [""],
+          "ports": [],
+          "notPorts": []
+        }
       }
-    }
+    ]
   }
 }'
+```
+
+#### List
+```curl
+curl --location 'http://localhost:8080/api/v1/globalNetworkPolicies?isOrder=true'
 ```
 
 #### Get
