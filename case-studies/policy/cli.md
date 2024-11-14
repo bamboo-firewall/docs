@@ -52,7 +52,7 @@ Examples:
   bbfw create gnp -f policy.yaml
 
   # Create many global network policy
-  bbfw create gnp -f policy1.yaml policy2.yaml
+  bbfw create gnp -f policy1.yaml -f policy2.yaml
 
 Flags:
   -f, --file stringArray   file to read
@@ -149,7 +149,7 @@ Examples:
   bbfw delete gnp allow_ssh allow_ping
 
   # Delete many policy with filename
-  bbfw delete gnp -f allow_ssh.yaml allow_ping.yaml
+  bbfw delete gnp -f allow_ssh.yaml -f allow_ping.yaml
 
   # Delete a set with name
   bbfw delete gns server
@@ -158,13 +158,13 @@ Examples:
   bbfw delete gns server vm
 
   # Delete many policy with filename
-  bbfw delete gns -f server.yaml vm.yaml
+  bbfw delete gns -f server.yaml -f vm.yaml
 
   # Delete a hep with tenantID and ip
   bbfw delete hep --tenantID=1 --ip=192.168.1.1
 
   # Delete many hep with filename
-  bbfw delete hep -f server.yaml vm.yaml
+  bbfw delete hep -f server.yaml -f vm.yaml
 
 
 Flags:

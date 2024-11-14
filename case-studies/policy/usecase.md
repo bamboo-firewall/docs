@@ -48,7 +48,7 @@ sequenceDiagram
     participant DB as Database
     Agent ->> APIS: Call interval to check policy changes by uuid and version of agent
     APIS ->> DB: Get current version policy of agent
-    APIS ->> Agent: Response all rules of policy if version not match
+    APIS ->> Agent: Response all rules of policy
     Agent ->> Agent: Save rules, uuid, version of policy to mem cache
     Agent ->> DP: Get rules
     Agent ->> Agent: Hash current rules from APIS and rules of DataPlane
@@ -339,7 +339,7 @@ Definition
 | action      | TRUE      | `Allow`, `Deny`, `Log`, `Pass`                     | string                     | Action to perform when matching this rule            |               |
 | protocol    | FALSE     | `TCP`, `UDP`, `SCTP`, `ICMP`, `UDPLite`, `1`-`255` | string \| number           | positive protocol match(cannot use with notProtocol) |               |
 | notProtocol | FALSE     | `TCP`, `UDP`, `SCTP`, `ICMP`, `UDPLite`, `1`-`255` | string \|  number          | negative protocol match(cannot use with protocol)    |               |
-| ipVersion   | TRUE      | `4`, `6`                                           | number                     | ip version                                           |               |
+| ipVersion   | FALSE     | `4`, `6`                                           | number                     | ip version                                           |               |
 | source      | FALSE     |                                                    | [EntityRule](#entity_rule) | Source match parameter                               |               |
 | destination | FALSE     |                                                    | [EntityRule](#entity_rule) | Destination match parameter                          |               |
 
