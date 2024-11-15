@@ -67,7 +67,7 @@ Usage:
   bbfw list [flags]
 
 Examples:
-  # List global network policy
+  # List global network sets
   bbfw list gns
 
   # List global network policy
@@ -154,16 +154,16 @@ Examples:
   # Delete a set with name
   bbfw delete gns server
 
-  # Delete many policy with name
+  # Delete many sets with name
   bbfw delete gns server vm
 
-  # Delete many policy with filename
+  # Delete many sets with filename
   bbfw delete gns -f server.yaml -f vm.yaml
 
   # Delete a hep with tenantID and ip
   bbfw delete hep --tenantID=1 --ip=192.168.1.1
 
-  # Delete many hep with filename
+  # Delete many heps with filename
   bbfw delete hep -f server.yaml -f vm.yaml
 
 
@@ -176,7 +176,7 @@ Flags:
 
 ## Auto completion command
 ```shell
-Generate bash completion script for shell(bash, zsh)
+Generate a completion script for bash or zsh shell
 
 Usage:
   bbfw completion

@@ -84,9 +84,9 @@ sudo apt-get install ipset
 # 1. Download bamboo-agent binary file with your specific distribution in bin folder
 
 # 2. Setup environment or .env file
-# api-server address
+# api-server address. Use for call api
 API_SERVER_ADDRESS="address of api-server"
-# ip address of api-server
+# ip address of api-server. Use for iptables
 API_SERVER_IPV4="ipv4 of api-server"
 # The organization to which it belongs
 TENANT_ID=1
