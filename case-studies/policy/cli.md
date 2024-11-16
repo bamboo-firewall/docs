@@ -3,24 +3,26 @@
 ```shell
 BAMBOO Firewall CLI
 Description:
-  The bbfwcli is used to manage global policy,
+  The bbfw is used to manage global policy,
   to view and manage host endpoint, global network set configuration.
 
 Usage:
-  bbfwcli [command]
+  bbfw [command]
 
 Available Commands:
   completion  Generate bash completion script for shell(bash, zsh)
   create      Create resources by filename
-  delete      Delete resources by name or filename
+  delete      Delete resources
   get         Get resource by name
   help        Help about any command
+  list        List resource
   version     Print the version information
 
 Flags:
-  -h, --help   help for bbfwcli
+  -h, --help   help for bbfw
 
-Use "bbfwcli [command] --help" for more information about a command.
+Use "bbfw [command] --help" for more information about a command.
+
 ```
 
 ## Prepare
@@ -43,44 +45,93 @@ The create command is used to create resources by filename.
     * GlobalNetworkPolicy(or gnp)
 
 Usage:
-  bbfwcli create [resourceType] [flags]
+  bbfw create [resourceType] [flags]
 
 Examples:
   # Create a global network policy
-  bbfwcli create gnp policy.yaml
+  bbfw create gnp -f policy.yaml
 
   # Create many global network policy
-  bbfwcli create gnp policy1.yaml policy2.yaml
+  bbfw create gnp -f policy1.yaml -f policy2.yaml
 
 Flags:
   -f, --file stringArray   file to read
   -h, --help               help for create
 ```
 
-## Get resource
+## List resource
 ```shell
-Get resource by name
+List resource
 
 Usage:
-  bbfwcli get [flags]
+  bbfw list [flags]
+
+Examples:
+  # List global network sets
+  bbfw list gns
+
+  # List global network policy
+  bbfw list gnp
+
+  # List global network policy with order
+  bbfw list gnp --isOrder
+
+  # List host endpoint
+  bbfw list hep
+
+  # List host endpoint with tenantID
+  bbfw list hep --tenantID=1
+
+  # List host endpoint with IP
+  bbfw list hep --ip=192.168.0.1
+
+  # List host endpoint with tenantID and IP
+  bbfw list hep --tenantID=1 --ip=192.168.0.1,
+
+
+Flags:
+  -h, --help            help for list
+      --ip string       Host Endpoint: filter by IP
+      --isOrder         Global Network Policy: filter by Order
+      --tenantID uint   Host Endpoint: filter by TenantID
+```
+
+## Get resource
+```shell
+Get resource
+
+Usage:
+  bbfw get [flags]
 
 Examples:
   # Get a global network policy by name
-  bbfwcli get gnp allow_ssh
+  bbfw get gnp allow_ssh
 
   # Get a global network policy by name with json output format
-  bbfwcli get gnp allow_ssh -o json
+  bbfw get gnp allow_ssh -o json
+
+ # Get a host endpoint
+  bbfw get hep --tenantID=1 --ip=192.168.123.0
+
+  # Get a global network set by name
+  bbfw get gns allow_ssh
+
+  # Get a global network set by name with json output format
+  bbfw get gns my_set -o json
 
 
 Flags:
   -h, --help            help for get
+      --ip string       HEP: get by ip
   -o, --output string   output format(yaml|json). Default: yaml
+      --tenantID uint   HEP: get by tenantID
 ```
 
 ## Delete resource
 
 ```shell
-The delete command is used to delete resources by name or filename.
+The delete command is used to delete resources by name(Global Network Policy, Global Network Set),
+by tenantID,IP(Host Endpoint) or filename. 
 
   Resource type available:
     * HostEndpoint(or hep)
@@ -88,36 +139,54 @@ The delete command is used to delete resources by name or filename.
     * GlobalNetworkPolicy(or gnp)
 
 Usage:
-  bbfwcli delete [resourceType] [flags]
+  bbfw delete [resourceType] [flags]
 
 Examples:
   # Delete a policy with name
-  bbfwcli delete gnp allow_ssh
+  bbfw delete gnp allow_ssh
 
   # Delete many policy with name
-  bbfwcli delete hep allow_ssh allow_ping
+  bbfw delete gnp allow_ssh allow_ping
 
   # Delete many policy with filename
-  bbfwcli delete hep allow_ssh.yaml allow_ping.yaml
+  bbfw delete gnp -f allow_ssh.yaml -f allow_ping.yaml
+
+  # Delete a set with name
+  bbfw delete gns server
+
+  # Delete many sets with name
+  bbfw delete gns server vm
+
+  # Delete many sets with filename
+  bbfw delete gns -f server.yaml -f vm.yaml
+
+  # Delete a hep with tenantID and ip
+  bbfw delete hep --tenantID=1 --ip=192.168.1.1
+
+  # Delete many heps with filename
+  bbfw delete hep -f server.yaml -f vm.yaml
+
 
 Flags:
   -f, --file stringArray   file to read
   -h, --help               help for delete
+      --ip string          HEP: get by ip
+      --tenantID uint      HEP: get by tenantID
 ```
 
 ## Auto completion command
 ```shell
-Generate bash completion script for shell(bash, zsh)
+Generate a completion script for bash or zsh shell
 
 Usage:
-  bbfwcli completion
+  bbfw completion
 
 Examples:
   # Gen completion for bash shell
-  bbfwcli completion bash
+  bbfw completion bash
 
   # Gen completion for zsh shell
-  bbfwcli completion zsh
+  bbfw completion zsh
 
 Flags:
   -h, --help   help for completion
@@ -128,7 +197,7 @@ Flags:
 Print the version information
 
 Usage:
-  bbfwcli version [flags]
+  bbfw version [flags]
 
 Flags:
   -h, --help   help for version
